@@ -46,3 +46,5 @@ Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 
 * 👑 use https://playcanvas.com/supersplat/editor
 * 👍 using the threejs version from https://discourse.threejs.org/t/3d-gaussian-splatting-in-three-js/57858 in https://projects.markkellogg.org/threejs/demo_gaussian_splats_3d.php
+
+![gs example viz](assets/mapmind/ezgif-2cdba2a1b56429b4.gif)
