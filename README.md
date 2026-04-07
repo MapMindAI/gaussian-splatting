@@ -1,5 +1,5 @@
 
-# Readme for MindMapAI
+# Readme for MapMindAI
 
 # 🚀 Getting Started
 ## 1. Prepare the environment
