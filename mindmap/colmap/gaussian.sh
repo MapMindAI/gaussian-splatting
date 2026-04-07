@@ -40,7 +40,7 @@ fi
 
 echo "Process session : " ${SESSION} ${IF_USE_DENSE}
 
-export PYTHONPATH="$PYTHONPATH:/mnt/data/yeliu/Dev/GaussianSplatting/submodules/libs"
+export PYTHONPATH="$PYTHONPATH:submodules/libs"
 OUTPUT_FOLDER=output
 
 DEPTH_GS_ARG=""
@@ -67,7 +67,7 @@ if [ "$USE_DEPTH" = true ] ; then
       done
 
       # if has images directly in the images folder, process those
-      NUM_IMAGES=$(find /mnt/data/yeliu/gaussian_splatting/${SESSION}${IF_USE_DENSE}/images/ -maxdepth 1 -type f | wc -l)
+      NUM_IMAGES=$(find ${MAP_FOLDER}/${SESSION}${IF_USE_DENSE}/images/ -maxdepth 1 -type f | wc -l)
       if ((${NUM_IMAGES} > 0)); then
           echo "has images directly in the images folder"
           python run.py --encoder vitl --pred-only --grayscale \
@@ -103,19 +103,5 @@ ${LR_GS_ARG} \
 --optimizer_type sparse_adam \
 --skip_interval 1 \
 --disable_viewer
-
-# python train.py ${DEPTH_GS_ARG} ${DAY_NIGHT_SCENE_LINE} ${EXPOSURE_GS_ARG} \
-# --source_path /mnt/data/yeliu/gaussian_splatting/${SESSION}/dense \
-# --model_path  /mnt/data/yeliu/gaussian_splatting/${SESSION}/${OUTPUT_FOLDER} \
-# --position_lr_init 0.000016 --scaling_lr 0.003 \
-# --iterations 120_000 \
-# --resolution 1 \
-# --save_iterations 120000 140000 \
-# --checkpoint_iterations 140000 \
-# --start_checkpoint /mnt/data/yeliu/gaussian_splatting/${SESSION}/${OUTPUT_FOLDER}/chkpnt80000.pth \
-# --densify_until_iter 120_000 --densify_grad_threshold 0.0001 \
-# --optimizer_type sparse_adam \
-# --disable_viewer \
-# --dynamic_memory
 
 echo "====================== DONE ======================"

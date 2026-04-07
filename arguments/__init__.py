@@ -53,9 +53,11 @@ class ModelParams(ParamGroup):
         self._depths = ""
         self._resolution = -1
         self._white_background = False
+        self.dynamic_memory = False
         self.train_test_exp = False
         self.data_device = "cuda"
         self.eval = False
+        self.skip_interval = 1
         super().__init__(parser, "Loading Parameters", sentinel)
 
     def extract(self, args):
@@ -86,10 +88,12 @@ class OptimizationParams(ParamGroup):
         self.exposure_lr_final = 0.001
         self.exposure_lr_delay_steps = 0
         self.exposure_lr_delay_mult = 0.0
-        self.percent_dense = 0.01
+        self.percent_dense = 0.01    # 0.01
         self.lambda_dssim = 0.2
         self.densification_interval = 100
         self.opacity_reset_interval = 3000
+        self.min_opacity = 0.01  # 0.005
+        self.max_point_screen_size = 20  # 20
         self.densify_from_iter = 500
         self.densify_until_iter = 15_000
         self.densify_grad_threshold = 0.0002

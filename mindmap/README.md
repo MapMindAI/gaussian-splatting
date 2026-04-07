@@ -48,17 +48,14 @@ python dm/style_transfer/neural_style.py train \
 ## test with determined ai
 
 * **copy the data to ml data**
-```
-ssh yeliu@cpu001.corp.deepmirror.com
+* **basic run** `./mindmap/run_session.sh ${MAP_FOLDER} ${SESSION}`
+  * `./mindmap/run_session.sh ./data DJI_test`
+* **process depth** `./mindmap/run_session.sh ${SESSION} depth`
+* **process segmentation** `./mindmap/run_session.sh ${SESSION} segment`
+* **process style** `./mindmap/run_session.sh ${SESSION} style your_style`
 
-mkdir /mnt/ml-experiment-data/yeliu/gaussian_splatting/${SESSION}
-cp -R /mnt/gz01/experiment/mobili/reconstruction/${SESSION}/dense /mnt/ml-experiment-data/yeliu/gaussian_splatting/${SESSION}
-chmod -R 777 /mnt/ml-experiment-data/yeliu/gaussian_splatting/${SESSION}
-```
-* **basic run** `./dm/run_session.sh ${SESSION}`
-* **process depth** `./dm/run_session.sh ${SESSION} depth`
-* **process segmentation** `./dm/run_session.sh ${SESSION} segment`
-* **process style** `./dm/run_session.sh ${SESSION} style your_style`
+
+  * `./mindmap/run_drone.sh ./data DJI_test`
 
 ## visualization
 

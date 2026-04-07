@@ -3,7 +3,7 @@
 # GRAPHDECO research group, https://team.inria.fr/graphdeco
 # All rights reserved.
 #
-# This software is free for non-commercial, research and evaluation use 
+# This software is free for non-commercial, research and evaluation use
 # under the terms of the LICENSE.md file.
 #
 # For inquiries contact  george.drettakis@inria.fr
@@ -14,11 +14,29 @@ import numpy as np
 from utils.graphics_utils import fov2focal
 from PIL import Image
 import cv2
+import os
+from tqdm import tqdm
 
 WARNED = False
+WARNED_RESOLU = False
+WARNED_TMP = False
 
 def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dataset):
-    image = Image.open(cam_info.image_path)
+    image_path = cam_info.image_path
+    if os.path.isfile(image_path):
+        image = Image.open(cam_info.image_path)
+    else:  # try png image
+        global WARNED_TMP
+        if not WARNED_TMP:
+            print("[ INFO ] original image path not found, try png image")
+            WARNED_TMP = True
+        image_path = cam_info.image_path[:-3] + "png"
+        if os.path.isfile(image_path):
+            image = Image.open(image_path)
+        else:
+            print("[ WARN ]", image_path, "not found")
+            return False, None
+            
 
     if cam_info.depth_path != "":
         try:
@@ -38,7 +56,7 @@ def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dat
             raise
     else:
         invdepthmap = None
-        
+
     orig_w, orig_h = image.size
     if args.resolution in [1, 2, 4, 8]:
         resolution = round(orig_w/(resolution_scale * args.resolution)), round(orig_h/(resolution_scale * args.resolution))
@@ -55,23 +73,40 @@ def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dat
                 global_down = 1
         else:
             global_down = orig_w / args.resolution
-    
+
 
         scale = float(global_down) * float(resolution_scale)
         resolution = (int(orig_w / scale), int(orig_h / scale))
 
-    return Camera(resolution, colmap_id=cam_info.uid, R=cam_info.R, T=cam_info.T, 
+    global WARNED_RESOLU
+    if not WARNED_RESOLU:
+        print(f"[ INFO ] process with resolution: {resolution}")
+        WARNED_RESOLU = True
+    return True, Camera(resolution, colmap_id=cam_info.uid, R=cam_info.R, T=cam_info.T,
                   FoVx=cam_info.FovX, FoVy=cam_info.FovY, depth_params=cam_info.depth_params,
-                  image=image, invdepthmap=invdepthmap,
+                  image_path=image_path, invdepthmap=invdepthmap,
                   image_name=cam_info.image_name, uid=id, data_device=args.data_device,
-                  train_test_exp=args.train_test_exp, is_test_dataset=is_test_dataset, is_test_view=cam_info.is_test)
+                  train_test_exp=args.train_test_exp, is_test_dataset=is_test_dataset, is_test_view=cam_info.is_test,
+                  dynamic_memory=args.dynamic_memory)
 
 def cameraList_from_camInfos(cam_infos, resolution_scale, args, is_nerf_synthetic, is_test_dataset):
+    if len(cam_infos) == 0:
+        return []
+
     camera_list = []
-
+    progress_bar = tqdm(range(0, len(cam_infos)), desc="Loading progress")
+    cnt = 0
     for id, c in enumerate(cam_infos):
-        camera_list.append(loadCam(args, id, c, resolution_scale, is_nerf_synthetic, is_test_dataset))
-
+        cnt = cnt + 1
+        if args.skip_interval > 1 and cnt%args.skip_interval != 0:
+            progress_bar.update(1)
+            continue
+        ret, camera = loadCam(args, id, c, resolution_scale, is_nerf_synthetic, is_test_dataset)
+        if ret:
+            camera_list.append(camera)
+        progress_bar.update(1)
+    progress_bar.close()
+    
     return camera_list
 
 def camera_to_JSON(id, camera : Camera):

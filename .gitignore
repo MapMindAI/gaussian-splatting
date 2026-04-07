@@ -8,3 +8,5 @@ tensorboard_3d
 screenshots
 *.ipynb_checkpoints
 *__pycache__
+data
+*bash_history

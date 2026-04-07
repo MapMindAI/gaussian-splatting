@@ -52,7 +52,7 @@ echo "====================== PROCESS IMAGE UNDISTORTER ======================"
 # --output_path ${MAP_FOLDER}/${SESSION}/sparse/0 \
 # --output_type TXT
 
-python dm/colmap/transform_colmap_model.py \
+python mindmap/colmap/transform_colmap_model.py \
 --database_path ${MAP_FOLDER}/${SESSION}/database.db \
 --model_path ${MAP_FOLDER}/${SESSION}/sparse_raw/0 \
 --output_model_path ${MAP_FOLDER}/${SESSION}/sparse/0
