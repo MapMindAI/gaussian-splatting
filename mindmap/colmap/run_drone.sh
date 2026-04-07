@@ -41,8 +41,7 @@ glomap mapper \
 --database_path ${MAP_FOLDER}/${SESSION}/database.db \
 --output_path ${MAP_FOLDER}/${SESSION}/sparse_raw \
 --image_path ${MAP_FOLDER}/${SESSION}/images \
---RelPoseEstimation.max_epipolar_error 8 \
---BundleAdjustment.max_num_iterations 200
+--RelPoseEstimation.max_epipolar_error 8
 
 echo "====================== PROCESS IMAGE UNDISTORTER ======================"
 
