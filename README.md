@@ -1,6 +1,10 @@
 
 # Readme for MindMapAI
 
+![Auto Assign](https://github.com/MapMindAI/gaussian-splatting/actions/workflows/auto-assign.yml/badge.svg)
+
+![Proof HTML](https://github.com/MapMindAI/gaussian-splatting/actions/workflows/proof-html.yml/badge.svg)
+
 # 🚀 Getting Started
 ## 1. Prepare the environment
 
