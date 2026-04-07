@@ -12,7 +12,7 @@ echo "WORK DIR is :"
 echo ${MAP_FOLDER}/${SESSION}
 
 echo "====================== PROCESS VIDEOS ======================"
-python mindmap/colmap/drone_image_extractor.py --input_video ${MAP_FOLDER}/${SESSION} --image_interval_sec 2
+python mindmap/colmap/drone_image_extractor.py --input_video ${MAP_FOLDER}/${SESSION} --image_interval_sec 1
 
 echo "====================== RUN COLMAP ======================"
 bash mindmap/colmap/run_drone.sh ${MAP_FOLDER} ${SESSION}

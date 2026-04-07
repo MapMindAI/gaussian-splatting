@@ -173,7 +173,7 @@ def add_gps_exif(image_path, output_path, lat, lon, alt, focal_len):
 
 
 def process_video(video_path, output_dir, image_interval_sec):
-    subtitle_path = video_path[:-3] + "SRT"  # 替换为你的字幕文件路径
+    subtitle_path = video_path[:-3] + "SRT"
 
     print("===> extract images ", video_path, image_interval_sec)
     images = extract_frames(video_path, output_dir, image_interval_sec);
@@ -195,7 +195,7 @@ def process_video(video_path, output_dir, image_interval_sec):
     print("==> Done", video_path)
 
 
-# video_path = "../../ADATA/DJI25/videos0210/DJI_20250210204155_0113_D.MP4" 
+# video_path = "../../ADATA/DJI25/videos0210/DJI_20250210204155_0113_D.MP4"
 # output_dir = "test"
 # process_video(video_path, output_dir)
 def parse_args():
