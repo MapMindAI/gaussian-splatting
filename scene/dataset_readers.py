@@ -3,7 +3,7 @@
 # GRAPHDECO research group, https://team.inria.fr/graphdeco
 # All rights reserved.
 #
-# This software is free for non-commercial, research and evaluation use 
+# This software is free for non-commercial, research and evaluation use
 # under the terms of the LICENSE.md file.
 #
 # For inquiries contact  george.drettakis@inria.fr
@@ -22,6 +22,8 @@ from pathlib import Path
 from plyfile import PlyData, PlyElement
 from utils.sh_utils import SH2RGB
 from scene.gaussian_model import BasicPointCloud
+
+MIN_NUM_PTS = 20
 
 class CameraInfo(NamedTuple):
     uid: int
@@ -68,6 +70,22 @@ def getNerfppNorm(cam_info):
 
     return {"translate": translate, "radius": radius}
 
+
+def filterPoints(nerf_normalization, data, threshold=5):
+    # filter points which are too far or isolated
+    mean = np.mean(data, axis=0)
+    std = np.std(data, axis=0)
+    z_scores = np.abs((data - mean) / std)
+    mask = np.all(z_scores < threshold, axis=1)
+    return mask
+
+
+def countValidPoint(extr):
+    # point3D_ids
+    flags = extr.point3D_ids != -1
+    return sum(flags)
+
+
 def readColmapCameras(cam_extrinsics, cam_intrinsics, depths_params, images_folder, depths_folder, test_cam_names_list):
     cam_infos = []
     for idx, key in enumerate(cam_extrinsics):
@@ -80,6 +98,9 @@ def readColmapCameras(cam_extrinsics, cam_intrinsics, depths_params, images_fold
         intr = cam_intrinsics[extr.camera_id]
         height = intr.height
         width = intr.width
+
+        if countValidPoint(extr) < MIN_NUM_PTS:
+            continue;
 
         uid = intr.id
         R = np.transpose(qvec2rotmat(extr.qvec))
@@ -130,7 +151,7 @@ def storePly(path, xyz, rgb):
     dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
             ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
             ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
-    
+
     normals = np.zeros_like(xyz)
 
     elements = np.empty(xyz.shape[0], dtype=dtype)
@@ -193,7 +214,7 @@ def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8):
     reading_dir = "images" if images == None else images
     cam_infos_unsorted = readColmapCameras(
         cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics, depths_params=depths_params,
-        images_folder=os.path.join(path, reading_dir), 
+        images_folder=os.path.join(path, reading_dir),
         depths_folder=os.path.join(path, depths) if depths != "" else "", test_cam_names_list=test_cam_names_list)
     cam_infos = sorted(cam_infos_unsorted.copy(), key = lambda x : x.image_name)
 
@@ -201,16 +222,23 @@ def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8):
     test_cam_infos = [c for c in cam_infos if c.is_test]
 
     nerf_normalization = getNerfppNorm(train_cam_infos)
+    print("- #cameras ", len(cam_infos), ", radius ", nerf_normalization["radius"])
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
     bin_path = os.path.join(path, "sparse/0/points3D.bin")
     txt_path = os.path.join(path, "sparse/0/points3D.txt")
-    if not os.path.exists(ply_path):
-        print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
+    # if not os.path.exists(ply_path):
+    if True:
+        # print("- Converting point3d.bin to .ply, will happen only the first time you open the scene.")
         try:
             xyz, rgb, _ = read_points3D_binary(bin_path)
         except:
             xyz, rgb, _ = read_points3D_text(txt_path)
+
+        mask = filterPoints(nerf_normalization, xyz)
+        xyz = xyz[mask]
+        print("- Converted point3d.bin to .ply, points in the model ", xyz.shape[0], rgb.shape[0])
+        rgb = rgb[mask]
         storePly(ply_path, xyz, rgb)
     try:
         pcd = fetchPly(ply_path)
@@ -259,7 +287,7 @@ def readCamerasFromTransforms(path, transformsfile, depths_folder, white_backgro
             image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
 
             fovy = focal2fov(fov2focal(fovx, image.size[0]), image.size[1])
-            FovY = fovy 
+            FovY = fovy
             FovX = fovx
 
             depth_path = os.path.join(depths_folder, f"{image_name}.png") if depths_folder != "" else ""
@@ -267,7 +295,7 @@ def readCamerasFromTransforms(path, transformsfile, depths_folder, white_backgro
             cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX,
                             image_path=image_path, image_name=image_name,
                             width=image.size[0], height=image.size[1], depth_path=depth_path, depth_params=None, is_test=is_test))
-            
+
     return cam_infos
 
 def readNerfSyntheticInfo(path, white_background, depths, eval, extension=".png"):
@@ -277,7 +305,7 @@ def readNerfSyntheticInfo(path, white_background, depths, eval, extension=".png"
     train_cam_infos = readCamerasFromTransforms(path, "transforms_train.json", depths_folder, white_background, False, extension)
     print("Reading Test Transforms")
     test_cam_infos = readCamerasFromTransforms(path, "transforms_test.json", depths_folder, white_background, True, extension)
-    
+
     if not eval:
         train_cam_infos.extend(test_cam_infos)
         test_cam_infos = []
@@ -289,7 +317,7 @@ def readNerfSyntheticInfo(path, white_background, depths, eval, extension=".png"
         # Since this data set has no colmap data, we start with random points
         num_pts = 100_000
         print(f"Generating random point cloud ({num_pts})...")
-        
+
         # We create random points inside the bounds of the synthetic Blender scenes
         xyz = np.random.random((num_pts, 3)) * 2.6 - 1.3
         shs = np.random.random((num_pts, 3)) / 255.0
