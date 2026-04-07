@@ -1,13 +1,5 @@
 
-# Readme for deepmirror
-
-```
-ln -s /mnt/data/yeliu/ /run/determined/workdir
-
-ln -s /mnt/data/wenhao /run/determined/workdir
-ln -s /mnt/data/yeliu/Dev/GaussianSplatting /run/determined/workdir
-ln -s /mnt/data/yeliu/gaussian_splatting /run/determined/workdir
-```
+# Readme for MindMapAI
 
 ## add submodules
 
@@ -18,7 +10,6 @@ export PYTHONPATH="$PYTHONPATH:/GaussianSplatting/submodules/libs"
 
 <details>
 <summary>Or build the submodules</summary>
-
 ```
 pip install submodules/diff-gaussian-rasterization
 pip install submodules/simple-knn
