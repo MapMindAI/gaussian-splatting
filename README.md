@@ -31,14 +31,16 @@ pip install submodules/fused-ssim
 
 ![example folder structure](assets/mapmind/example_drone_data.png)
 
-
 2. Run the script:
 
 ```
 ./mindmap/run_drone.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`
+Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`. After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
+
+![example folder result](assets/mapmind/example_drone_data_result.png)
+
 
 ## 3. Visualization
 
