@@ -1,4 +1,7 @@
-FROM determinedai/environments:cuda-11.3-pytorch-1.12-tf-2.11-gpu-mpi-0.24.0
+FROM nvidia/cuda:11.6.2-cudnn8-devel-ubuntu20.04
+#FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+
+SHELL [ "/bin/bash", "--login", "-c" ]
 
 # Set locale.
 RUN apt-get update -y && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
@@ -6,38 +9,98 @@ RUN apt-get update -y && apt-get install -y locales && rm -rf /var/lib/apt/lists
 ENV LANG en_US.utf8
 
 # Install tools for installers.
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    build-essential=12.8* \
-    cmake=3.16.3* \
-    curl=7.68.0* \
-    git=1:2.25.1* \
-    git-lfs \
-    pkg-config=0.29.1* \
-    software-properties-common=0.99.9* \
-    unzip=6.0* \
-    wget=1.20.3* \
-    libcurl4-openssl-dev \
-    sshfs \
+
+# install colmap directly inside the image
+# Prevent stop building ubuntu at time zone selection.
+ENV DEBIAN_FRONTEND=noninteractive
+ARG COLMAP_VERSION=78f1eefacae542d753c2e4f6a26771a0d976227d
+ARG CUDA_ARCHITECTURES="60;70;75;80;86"
+
+# Prepare and empty machine for building
+RUN apt-get update && apt-get install -y \
+    git \
+    ninja-build \
     sudo \
-    vim \
-    libzbar0 \
+    wget \
+    unzip \
+    build-essential \
+    libboost-program-options-dev \
+    libboost-filesystem-dev \
+    libboost-graph-dev \
+    libboost-system-dev \
+    libboost-test-dev \
+    libatlas-base-dev \
+    libsuitesparse-dev \
+    libfreeimage-dev \
+    libmetis-dev \
+    libgoogle-glog-dev \
+    libgflags-dev \
+    libglew-dev \
+    qtbase5-dev \
+    libcgal-dev \
+    gcc-10 \
+    g++-10 \
+    libflann-dev \
+    libsqlite3-dev \
+    libqt5opengl5-dev \
+    python3-pip=20.0.2* \
+    python3-tk \
+    daemontools \
+    libgl1-mesa-glx \
+    libpng-dev libjpeg-dev libtiff-dev libxxf86vm1 libxxf86vm-dev libxi-dev libxrandr-dev coinor-libclp-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# install libraries
-# includes https://github.com/facebookresearch/dinov2/blob/main/requirements.txt
-RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple \
-  opencv-contrib-python==4.8.0.76 \
-  scikit-learn==0.24.2 \
-  accelerate==0.12.0 \
-  pose-transform==0.3.1 \
-  setuptools==59.5.0 \
-  joblib \
-  plyfile \
-  tqdm \
-  mmsegmentation==0.27.0 \
-  ultralytics \
-  pyzbar \
-  omegaconf
 
-RUN pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12/index.html
+ENV CC=/usr/bin/gcc-10
+ENV CXX=/usr/bin/g++-10
+ENV CUDAHOSTCXX=/usr/bin/g++-10
+
+# installl cmake
+COPY installers/cmake.sh /tmp/installers/
+RUN bash /tmp/installers/cmake.sh && rm /tmp/installers/cmake.sh
+
+# installl eigen ceres
+COPY installers/ceres.sh /tmp/installers/
+RUN bash /tmp/installers/ceres.sh && rm /tmp/installers/ceres.sh
+
+# install colmap
+RUN git clone https://github.com/colmap/colmap.git
+RUN cd colmap && \
+    git reset --hard b0f3c6d0f6550bd1f40942a119feb7fd2e96ff5e && \
+    mkdir build && \
+    cd build && \
+    cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} -DFETCH_POSELIB=OFF && \
+    ninja && \
+    ninja install && \
+    cd .. && rm -rf colmap
+
+# install glomap
+COPY installers/glomap.sh /tmp/installers/
+RUN bash /tmp/installers/glomap.sh && rm /tmp/installers/glomap.sh
+
+# installl openMVG
+COPY installers/openMBG.sh /tmp/installers/
+RUN bash /tmp/installers/openMBG.sh && rm /tmp/installers/openMBG.sh
+
+# install miniconda
+ENV CONDA_DIR $HOME/miniconda3
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py312_24.5.0-0-Linux-x86_64.sh -O ~/miniconda.sh && \
+    chmod +x ~/miniconda.sh && \
+    ~/miniconda.sh -b -p $CONDA_DIR && \
+    rm ~/miniconda.sh
+
+# make non-activate conda commands available
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# make conda activate command available from /bin/bash --login shells
+RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
+
+# make conda activate command available from /bin/bash --interative shells
+RUN conda init bash
+
+COPY environment.yml /tmp/
+RUN conda env create --file /tmp/environment.yml
+
+RUN pip install jupyterlab
+
+RUN conda activate gaussian_splatting
