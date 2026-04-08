@@ -13,16 +13,30 @@ docker run -it --rm -v $(pwd):/workspace ghcr.io/MapMindAI/myapp:latest
 ```
 
 <details>
-<summary>Or build the submodules if not using docker image</summary>
-in the repo we have rebuilt libs for docker env, if you don't use docker, you might need to build these libs:
+<summary>Or build the environment if not using docker image</summary>
+In the repo we have rebuilt libs for docker env, if you don't use docker, you might need to build these libs:
+
 ```
 pip install submodules/diff-gaussian-rasterization
 pip install submodules/simple-knn
 pip install submodules/fused-ssim
 ```
+
+And exif tools is need, if you want to extract gps from gopro videos.
+```
+sudo apt update
+sudo apt install libimage-exiftool-perl
+```
 </details>
 
-## 2. Run With Drone Data
+
+## 2. Visualization
+
+* 👑 use https://playcanvas.com/supersplat/editor
+* 👍 using the threejs version from https://discourse.threejs.org/t/3d-gaussian-splatting-in-three-js/57858 in https://projects.markkellogg.org/threejs/demo_gaussian_splats_3d.php
+
+
+## 3. Run With Drone Data
 
 1. Put the data to folder ([example google drive drone videos](https://drive.google.com/drive/folders/1TIcNHhN6kdgpAfCDT56L06swd2MmmnuI?usp=drive_link)
 ):
@@ -41,10 +55,6 @@ Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 
 ![example folder result](assets/mapmind/example_drone_data_result.png)
 
-
-## 3. Visualization
-
-* 👑 use https://playcanvas.com/supersplat/editor
-* 👍 using the threejs version from https://discourse.threejs.org/t/3d-gaussian-splatting-in-three-js/57858 in https://projects.markkellogg.org/threejs/demo_gaussian_splats_3d.php
-
 ![gs example viz](assets/mapmind/ezgif-2cdba2a1b56429b4.gif)
+
+## 4. Run with 360 data
