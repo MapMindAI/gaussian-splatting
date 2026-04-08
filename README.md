@@ -5,7 +5,7 @@
 ## 1. Prepare the environment
 
 We recommend using the provided Docker image to ensure a consistent environment.
-`docker pull ghcr.io/mapmindai/myapp:sha-881caec`
+`docker pull ghcr.io/mapmindai/gaussiansplatting:latest`
 
 run the container with:
 ```
@@ -59,7 +59,7 @@ Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 
 ## 4. Run with 360 data
 
-1. Put the data to folder ([example google drive insta360 videos](xxx):
+1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link):
   * Put the 360 video to the session_folder.
   * Gopro Max 360 support GPS output. <u>For gopro max videos, "xxx.360" file is required to obtain the GPS data.</u>
   * Insta360 video needed to be processed into standard panorama videos.
