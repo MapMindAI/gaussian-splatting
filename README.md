@@ -58,3 +58,21 @@ Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 ![gs example viz](assets/mapmind/ezgif-2cdba2a1b56429b4.gif)
 
 ## 4. Run with 360 data
+
+1. Put the data to folder ([example google drive insta360 videos](xxx):
+  * Put the 360 video to the session_folder.
+  * Gopro Max 360 support GPS output. <u>For gopro max videos, "xxx.360" file is required to obtain the GPS data.</u>
+  * Insta360 video needed to be processed into standard panorama videos.
+
+2. Run the script:
+
+```
+./mindmap/run_gopro.sh MAP_FOLDER SESSION_NAME
+```
+
+Example usage : `./mindmap/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`. After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
+
+# Adjust Gaussian Parameters
+
+* You could refer to the raw repo, and the build script "mindmap/colmap/gaussian.sh" to adjust your parameters.
+* You can move to "run_xxx.sh" to adjust parameter for videos.
