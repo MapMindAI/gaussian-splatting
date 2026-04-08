@@ -51,7 +51,9 @@ sudo apt install libimage-exiftool-perl
 ./mindmap/run_drone.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`. After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
+Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`.
+About 1 hour is needed for the full pipeline.
+After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
 ![example folder result](assets/mapmind/example_drone_data_result.png)
 
@@ -67,10 +69,12 @@ Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 2. Run the script:
 
 ```
-./mindmap/run_gopro.sh MAP_FOLDER SESSION_NAME
+./mindmap/run_360.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mindmap/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`. After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
+Example usage : `./mindmap/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`.
+About 4 hour is needed for the full pipeline.
+After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
 # Adjust Gaussian Parameters
 
