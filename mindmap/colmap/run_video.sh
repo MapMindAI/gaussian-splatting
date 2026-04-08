@@ -29,8 +29,7 @@ fi
 
 
 MASK_DIR=${MAP_FOLDER}/${SESSION}/masks
-GENERATE_MASKS=1  # 设为1表示自动生成 masks, 0 表示跳过（你已生成）
-# 如果开启自动生成，调用 Python 脚本
+GENERATE_MASKS=0
 if [ "${GENERATE_MASKS}" -eq 1 ]; then
     echo "=== Generating QR masks into ${MASK_DIR} ==="
     python mindmap/colmap/qrcode/generate_qr_mask.py \

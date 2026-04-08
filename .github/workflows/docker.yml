@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: myapp
+  IMAGE_NAME: gaussiansplatting
 
 jobs:
   docker:

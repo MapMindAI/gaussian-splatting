@@ -48,6 +48,7 @@ RUN apt-get update && apt-get install -y \
     daemontools \
     libgl1-mesa-glx \
     libpng-dev libjpeg-dev libtiff-dev libxxf86vm1 libxxf86vm-dev libxi-dev libxrandr-dev coinor-libclp-dev \
+    libimage-exiftool-perl \
     && rm -rf /var/lib/apt/lists/*
 
 

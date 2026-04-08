@@ -121,6 +121,7 @@ if __name__ == "__main__":
     save_folder = os.path.join(args.input_video, "images")
     os.makedirs(save_folder, exist_ok=True)
 
+    has_gps = False
     for video_path in pano_videos:
         print("process", video_path)
         focus_length = read_video_frames(args.num_divide, args.process_interval, args.jump_jump, video_path, save_folder)
@@ -129,11 +130,14 @@ if __name__ == "__main__":
         video_path_360 = video_path[:-4] + ".360"
         output_xml_file = video_path[:-4] + ".xml"
         exif_ret = gopro_gps_extractor.process_video_exif(video_path_360, output_xml_file)
-        gps_infos = gopro_gps_extractor.extract_data_from_file(output_xml_file)
-        gopro_gps_extractor.add_exif_to_image(gps_infos, video_path_360, focus_length)
+        if exif_ret:
+            has_gps = True
+            gps_infos = gopro_gps_extractor.extract_data_from_file(output_xml_file)
+            gopro_gps_extractor.add_exif_to_image(gps_infos, video_path_360, focus_length)
 
-    #
     # create a file to tell that image gps exist
-    os.makedirs(os.path.join(save_folder, "image_with_gps"), exist_ok=True)
+    if has_gps:
+        print("GPS data obtained!")
+        os.makedirs(os.path.join(save_folder, "image_with_gps"), exist_ok=True)
 
     print("Done!")

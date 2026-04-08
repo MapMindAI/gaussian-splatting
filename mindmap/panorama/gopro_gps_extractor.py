@@ -8,7 +8,7 @@ import glob
 from PIL import Image
 from tqdm import tqdm
 
-EXIFTOOL_PATH="../Image-ExifTool-13.25/exiftool"
+EXIFTOOL_PATH="exiftool"
 GpsMeta = collections.namedtuple(
     "GpsMeta", ["timestamp", "timestampreal", "lat", "lon", "alt"])
 
