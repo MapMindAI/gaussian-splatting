@@ -1,6 +1,10 @@
 
 # Readme for MapMindAI
 
+
+| [![Watch the video](assets/mapmind/video_cn.jpg)](https://www.youtube.com/watch?v=VIDEO_ID) | [![Watch the video](assets/mapmind/video_en.jpg)](https://www.youtube.com/watch?v=VIDEO_ID) |
+
+
 # 🚀 Getting Started
 ## 1. Prepare the environment
 
