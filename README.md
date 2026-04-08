@@ -2,10 +2,9 @@
 # Readme for MapMindAI
 
 
-|  video | video |
+|  video bilibili (CN) | video youtube (EN) |
 |-------|--------|
-| [![Watch the video](assets/mapmind/video_cn.jpg)](https://www.youtube.com/watch?v=VIDEO_ID) | [![Watch the video](assets/mapmind/video_en.jpg)](https://www.youtube.com/watch?v=VIDEO_ID) |
-
+| [![Watch the video](assets/mapmind/video_cn.jpg)](https://www.bilibili.com/video/BV1W5DjB1EFr) | [![Watch the video](assets/mapmind/video_en.jpg)](https://youtu.be/uL9QC6mJdKs) |
 
 # 🚀 Getting Started
 ## 1. Prepare the environment
