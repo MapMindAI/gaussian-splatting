@@ -83,7 +83,7 @@ After the building step finished, we will have the following results in the fold
 
 ## 4. Run with 360 data
 
-1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](四https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)):
+1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)):
   * Put the 360 video to the session_folder.
   * Gopro Max 360 support GPS output. <u>For gopro max videos, "xxx.360" file is required to obtain the GPS data.</u>
   * Insta360 video needed to be processed into standard panorama videos.
