@@ -7,7 +7,6 @@ EasyGaussianSplatting provides an end-to-end, production-oriented pipeline for G
 |-------|--------|
 | [![Watch the video](assets/mapmind/video_cn.jpg)](https://www.bilibili.com/video/BV1W5DjB1EFr) | [![Watch the video](assets/mapmind/video_en.jpg)](https://youtu.be/uL9QC6mJdKs) |
 
-
 The repository is designed to bridge the gap between research prototypes and real-world applications by integrating:
 
 - Docker-based environment for reproducibility
@@ -20,7 +19,10 @@ In addition to the standard pipeline, this project includes geo-referencing capa
 - Recovery of metric scale using GPS information
 - Integration of geo-aligned reconstruction into the pipeline
 
-These features enable users to obtain not only visually accurate reconstructions, but also spatially consistent and scale-aware 3D scenes.
+We further optimize the memory footprint of Gaussian Splatting,
+significantly reducing GPU usage and enabling large-scale scene training on consumer-grade GPUs.
+
+These features enable users to obtain not only visually accurate reconstructions, but also spatially consistent, scale-aware, and scalable 3D scenes.
 
 EasyGaussianSplatting is suitable for:
 - Research and benchmarking
