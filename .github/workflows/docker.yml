@@ -3,6 +3,14 @@ name: Build and publish Docker image
 on:
   push:
     branches: ["master"]
+    paths:
+      - ".github/workflows/docker.yml"
+      - "artifacts/**"
+  pull_request:
+    branches: ["master"]
+    paths:
+      - ".github/workflows/docker.yml"
+      - "artifacts/**"
   workflow_dispatch:
 
 permissions:
