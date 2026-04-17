@@ -17,7 +17,11 @@ ARG COLMAP_VERSION=78f1eefacae542d753c2e4f6a26771a0d976227d
 ARG CUDA_ARCHITECTURES="60;70;75;80;86"
 
 # Prepare and empty machine for building
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository universe && \
+    apt-get update && \
+    apt-get install -y \
     git \
     ninja-build \
     sudo \
