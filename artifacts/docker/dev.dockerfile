@@ -80,8 +80,16 @@ COPY installers/glomap.sh /tmp/installers/
 RUN bash /tmp/installers/glomap.sh && rm /tmp/installers/glomap.sh
 
 # installl openMVG
-COPY installers/openMBG.sh /tmp/installers/
-RUN bash /tmp/installers/openMBG.sh && rm /tmp/installers/openMBG.sh
+# COPY installers/openMBG.sh /tmp/installers/
+# RUN bash /tmp/installers/openMBG.sh && rm /tmp/installers/openMBG.sh
+
+# installl insta360_sdk
+COPY installers/insta360_sdk.sh /tmp/installers/
+RUN bash /tmp/installers/insta360_sdk.sh && rm /tmp/installers/insta360_sdk.sh
+
+# installl install_exiftools
+COPY installers/install_exiftools.sh /tmp/installers/
+RUN bash /tmp/installers/install_exiftools.sh && rm /tmp/installers/install_exiftools.sh
 
 # install miniconda
 ENV CONDA_DIR $HOME/miniconda3
