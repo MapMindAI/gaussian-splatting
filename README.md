@@ -34,6 +34,7 @@ EasyGaussianSplatting is suitable for:
 
 We recommend using the provided Docker image to ensure a consistent environment.
 `docker pull ghcr.io/mapmindai/gaussiansplatting:latest`
+(or you could build it if you wish to `docker build -f artifacts/docker/dev.dockerfile -t gaussian_splatting artifacts/docker/`)
 
 run the container with:
 ```

@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.6.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04
 #FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
 SHELL [ "/bin/bash", "--login", "-c" ]
@@ -47,7 +47,7 @@ RUN apt-get update && \
     libflann-dev \
     libsqlite3-dev \
     libqt5opengl5-dev \
-    python3-pip=20.0.2* \
+    python3-pip \
     python3-tk \
     daemontools \
     libgl1-mesa-glx \
@@ -89,11 +89,16 @@ RUN bash /tmp/installers/glomap.sh && rm /tmp/installers/glomap.sh
 
 # installl insta360_sdk
 COPY installers/insta360_sdk.sh /tmp/installers/
+COPY installers/insta_360_main.cc /tmp/installers/
 RUN bash /tmp/installers/insta360_sdk.sh && rm /tmp/installers/insta360_sdk.sh
 
 # installl install_exiftools
 COPY installers/install_exiftools.sh /tmp/installers/
 RUN bash /tmp/installers/install_exiftools.sh && rm /tmp/installers/install_exiftools.sh
+
+# clean
+RUN rm -rf /tmp/installers
+
 
 # install miniconda
 ENV CONDA_DIR $HOME/miniconda3
