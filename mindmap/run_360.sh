@@ -13,7 +13,7 @@ echo "====================== PROCESS VIDEOS ======================"
 python mindmap/panorama/extract_pinhole_images.py --input_video ${MAP_FOLDER}/${SESSION} --process_interval 10 --num_divide 6
 
 export OPENCV_FFMPEG_READ_ATTEMPTS=10000
-python mindmap/panorama/extract_video_images.py --input_video ${MAP_FOLDER}/${SESSION} --ignore_header GS
+python mindmap/panorama/extract_video_images.py --input_video ${MAP_FOLDER}/${SESSION} --ignore_prefix GS,VID_
 
 echo "====================== RUN COLMAP ======================"
 # if qrcodes are needed to recover scale and transform, add 3rd param 1. Make sure you have correct qr.json

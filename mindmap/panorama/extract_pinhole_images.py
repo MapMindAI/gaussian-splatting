@@ -35,6 +35,9 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
     frame_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     print("  - video size : ", video_width, video_height, frame_length)
+    if video_width != video_height * 2:
+        print(f"ERROR video, this is not an standard panorama video ({video_width}x{video_height})")
+        return -1
 
     # compute a proper resolution for the output image
     image_width = int(video_width / num_divide)
@@ -105,13 +108,42 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
     return focus_length
 
 
-# python dm/panorama/extract_pinhole_images.py --input_video data/gopro_bridge/
+def process_insta360_videos(input_video_path):
+    # insta360 video postfix is insv
+    pano_raw_videos = glob.glob(os.path.join(input_video_path, "VID*.insv"))
+
+    for pano_raw_video in pano_raw_videos:
+        output_mp4_path = pano_raw_video[:-4] + "mp4"
+        if os.path.isfile(output_mp4_path):
+            print("  - " + output_mp4_path + " exist")
+            continue
+
+        print(f"process {pano_raw_video} save to {output_mp4_path}")
+        try:
+            command_line = f"""insta360_media_stitcher \
+            -inputs {pano_raw_video} -output {output_mp4_path} \
+            -stitch_type optflow -enable_stitchfusion \
+            -output_size 8000x4000 -bitrate 150000000 \
+            -enable_h265_encoder -enable_flowstate
+            """
+            print("  - run command line : " + command_line)
+            os.system(command_line)
+        except Exception as e:
+            print(f"failed when processing insta360_media_stitcher: {e}")
+
+
+# python mindmap/panorama/extract_pinhole_images.py --input_video data/insta360_test/
 if __name__ == "__main__":
     args = parse_args()
 
+    process_insta360_videos(args.input_video)
+
     # find all the video inside the folder
+    # go pro video prefix is GS
     pano_videos = glob.glob(os.path.join(args.input_video, "GS*.MP4"))
     pano_videos += glob.glob(os.path.join(args.input_video, "GS*.mp4"))
+    # insta360 video prefix is VID
+    pano_videos += glob.glob(os.path.join(args.input_video, "VID*.mp4"))
 
     if len(pano_videos) == 0:
       print("No pano video found")
@@ -125,8 +157,10 @@ if __name__ == "__main__":
     for video_path in pano_videos:
         print("process", video_path)
         focus_length = read_video_frames(args.num_divide, args.process_interval, args.jump_jump, video_path, save_folder)
+        if focus_length < 0:
+            continue
 
-        # add exif
+        # add exif from .360 files (of GoPro)
         video_path_360 = video_path[:-4] + ".360"
         output_xml_file = video_path[:-4] + ".xml"
         exif_ret = gopro_gps_extractor.process_video_exif(video_path_360, output_xml_file)

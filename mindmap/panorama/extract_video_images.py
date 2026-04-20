@@ -15,21 +15,30 @@ def parse_args():
     parser.add_argument('--process_interval', help='frame process interval', default=60, type=int)
     parser.add_argument('--create_subfoler', help='create subfoler', default=1, type=int)
     parser.add_argument('--input_video', help='input video path', type=str)
-    parser.add_argument('--ignore_header', help='video filter header', default="", type=str)
+    parser.add_argument('--ignore_prefix', help='video filter header, split with ,', default="", type=str)
     parser.add_argument('--images', help='output folder', default="images", type=str)
     args = parser.parse_args()
 
     return args
 
-def find_mp4_files(input_dir, ignore_header):
+def find_mp4_files(input_dir, ignore_prefix):
     if not os.path.isdir(input_dir):
-        raise ValueError(f"输入路径无效：{input_dir}")
+        raise ValueError(f"invalid path：{input_dir}")
 
     all_mp4_files = glob.glob(os.path.join(input_dir, "*.MP4"))
     all_mp4_files += glob.glob(os.path.join(input_dir, "*.mp4"))
 
-    if len(ignore_header) > 0:
-        filtered_mp4_files = [file for file in all_mp4_files if not os.path.basename(file).startswith(ignore_header)]
+    if len(ignore_headers) > 0:
+        ignore_header = ignore_prefix.split(',')
+        filtered_mp4_files = []
+        for file in all_mp4_files:
+            valid = True
+            for header in ignore_header:
+                if os.path.basename(file).startswith(ignore_header):
+                    valid = False
+            if not valid:
+                continue
+            filtered_mp4_files.append(file)
         return filtered_mp4_files
     return all_mp4_files
 
@@ -93,7 +102,7 @@ if __name__ == "__main__":
     print(args)
 
     # find all the video inside the folder
-    filtered_mp4_files = find_mp4_files(args.input_video, args.ignore_header)
+    filtered_mp4_files = find_mp4_files(args.input_video, args.ignore_prefix)
 
     # create folder to save the images
     save_folder = os.path.join(args.input_video, args.images)
