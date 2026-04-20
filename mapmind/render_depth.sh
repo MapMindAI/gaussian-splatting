@@ -3,7 +3,7 @@ set -e
 
 if [ $# -lt 2 ]; then
     echo "PLEASE SET <MAP_FOLDER> <SESSION NAME>"
-    echo "example ./mindmap/render_depth.sh /mnt/data/yeliu/gaussian_splatting/GoPro test"
+    echo "example ./mapmind/render_depth.sh /mnt/data/yeliu/gaussian_splatting/GoPro test"
     exit 1
 fi
 

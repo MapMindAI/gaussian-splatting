@@ -32,10 +32,10 @@ MASK_DIR=${MAP_FOLDER}/${SESSION}/masks
 GENERATE_MASKS=0
 if [ "${GENERATE_MASKS}" -eq 1 ]; then
     echo "=== Generating QR masks into ${MASK_DIR} ==="
-    python mindmap/colmap/qrcode/generate_qr_mask.py \
+    python mapmind/colmap/qrcode/generate_qr_mask.py \
         --image_dir ${MAP_FOLDER}/${SESSION}/images \
         --mask_dir ${MASK_DIR} \
-        --detect_model_path mindmap/colmap/qrcode/model/best-yolov8.pt
+        --detect_model_path mapmind/colmap/qrcode/model/best-yolov8.pt
 fi
 
 echo "====================== PROCESS FEATURE EXTRACTION " ${CAMERA_MODEL}" ======================"
@@ -105,7 +105,7 @@ glomap mapper \
 
 # rotate the model to fit UE axis
 echo "====================== ROTATE COLMAP TO UE ======================"
-python mindmap/colmap/rotate_colmap_to_UE.py \
+python mapmind/colmap/rotate_colmap_to_UE.py \
 --colmap_model_path ${MAP_FOLDER}/${SESSION} \
 --input_sparse_path sparse_raw/0/ \
 --output_sparse_path sparse_raw/0/
@@ -118,17 +118,17 @@ fi
 
 if [ "${USE_QRCODE_PRIOR}" == "1" ]; then
   echo "====================== USE QR-CODE PRIOR TRANSFORM ======================"
-  python mindmap/colmap/qrcode/transform_colmap_model_qrcode.py \
+  python mapmind/colmap/qrcode/transform_colmap_model_qrcode.py \
   --colmap_model_dir ${MAP_FOLDER}/${SESSION} \
   --image_dir images \
-  --qr_json_file mindmap/colmap/qrcode/qr.json \
+  --qr_json_file mapmind/colmap/qrcode/qr.json \
   --prior_qr_poses_json_file qr_poses_prior.json \
   --output_dir ${MAP_FOLDER}/${SESSION}/output \
   --input_sparse_path sparse_raw/0/ \
   --output_sparse_path sparse/0/
 elif [ -d "$TEST_PATH_GPS" ]; then
   echo "====================== USE GPS TRANSFORM ======================"
-  python mindmap/colmap/transform_colmap_model.py \
+  python mapmind/colmap/transform_colmap_model.py \
   --database_path ${MAP_FOLDER}/${SESSION}/database.db \
   --model_path ${MAP_FOLDER}/${SESSION}/sparse_raw/0 \
   --output_model_path ${MAP_FOLDER}/${SESSION}/sparse/0
