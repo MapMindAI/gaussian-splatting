@@ -89,7 +89,32 @@ After the building step finished, we will have the following results in the fold
 1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)):
   * Put the 360 video to the session_folder.
   * Gopro Max 360 support GPS output. <u>For gopro max videos, "xxx.360" file is required to obtain the GPS data.</u>
-  * Insta360 video needed to be processed into standard panorama videos.
+  * Insta360 video will be stitched into panorama videos (automatically done in this repo), ".insv" file is all you needed.
+
+<details>
+<summary>Insta360 stitch with Linux SDK</summary>
+
+Raw Insta360 videos need to be processed with phone, and lack of parameters. Here we use sdk for linux cuda, so we could process the video fast and accurate.
+[Desktop-MediaSDK-Cpp](https://github.com/Insta360Develop/Desktop-MediaSDK-Cpp), example command:
+
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+INPUT_INSV=data/insta360_test/VID_20260417_141937_00_001.insv
+OUPUT_VIDEO=data/insta360_test/VID_20260417_141937_00_001.mp4
+
+insta360_media_stitcher \
+-inputs ${INPUT_INSV} \
+-output ${OUPUT_VIDEO} \
+-model_root_dir /EasyGaussianSplatting/data/sdk_dir \
+-stitch_type aistitch -enable_stitchfusion \
+-output_size 8000x4000 -bitrate 150000000 \
+-enable_h265_encoder -enable_flowstate -enable_colorplus
+```
+
+
+</details>
+
 
 2. Run the script:
 
