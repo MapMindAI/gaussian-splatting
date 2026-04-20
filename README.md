@@ -73,10 +73,10 @@ pip install submodules/fused-ssim
 2. Run the script:
 
 ```
-./mindmap/run_drone.sh MAP_FOLDER SESSION_NAME
+./mapmind/run_drone.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mindmap/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`.
+Example usage : `./mapmind/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`.
 About 1 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1K8n5lYDqT42_YaPtC5t4T2Nx0TkEyDko/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
@@ -119,14 +119,14 @@ insta360_media_stitcher \
 2. Run the script:
 
 ```
-./mindmap/run_360.sh MAP_FOLDER SESSION_NAME
+./mapmind/run_360.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mindmap/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`.
+Example usage : `./mapmind/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
 # Adjust Gaussian Parameters
 
-* You could refer to the raw repo, and the build script "mindmap/colmap/gaussian.sh" to adjust your parameters.
+* You could refer to the raw repo, and the build script "mapmind/colmap/gaussian.sh" to adjust your parameters.
 * You can move to "run_xxx.sh" to adjust parameter for videos.
