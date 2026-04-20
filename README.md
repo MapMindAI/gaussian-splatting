@@ -87,9 +87,8 @@ After the building step finished, we will have the following results in the fold
 ## 4. Run with 360 data
 
 1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)):
-  * Put the 360 video to the session_folder.
-  * Gopro Max 360 support GPS output. <u>For gopro max videos, "xxx.360" file is required to obtain the GPS data.</u>
-  * Insta360 video will be stitched into panorama videos (automatically done in this repo), ".insv" file is all you needed.
+  * Gopro Max 360 support GPS output. For gopro max videos, **"xxx.360"** <u>file is required to obtain the GPS data.</u> (see more in "mapmind/panorama/gopro_gps_extractor.py")
+  * Insta360 video will be stitched into panorama videos (automatically done in this repo), **".insv" file is all you needed**.
 
 <details>
 <summary>Insta360 stitch with Linux SDK</summary>
@@ -112,6 +111,7 @@ insta360_media_stitcher \
 -enable_h265_encoder -enable_flowstate -enable_colorplus
 ```
 
+Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/panorama/insta360_meta_extractor.py" to see more details, about how we extract these data.
 
 </details>
 
@@ -122,7 +122,7 @@ insta360_media_stitcher \
 ./mapmind/run_360.sh MAP_FOLDER SESSION_NAME
 ```
 
-Example usage : `./mapmind/run_gopro.sh /mnt/data/yeliu/gaussian_splatting gopro_test`.
+Example usage : `./mapmind/run_360.sh /mnt/data/yeliu/gaussian_splatting insta360_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 

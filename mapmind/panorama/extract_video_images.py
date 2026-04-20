@@ -28,7 +28,7 @@ def find_mp4_files(input_dir, ignore_prefix):
     all_mp4_files = glob.glob(os.path.join(input_dir, "*.MP4"))
     all_mp4_files += glob.glob(os.path.join(input_dir, "*.mp4"))
 
-    if len(ignore_headers) > 0:
+    if len(ignore_prefix) > 0:
         ignore_header = ignore_prefix.split(',')
         filtered_mp4_files = []
         for file in all_mp4_files:

@@ -12,7 +12,10 @@ EXIFTOOL_PATH="exiftool"
 GpsMeta = collections.namedtuple(
     "GpsMeta", ["timestamp", "timestampreal", "lat", "lon", "alt"])
 
-def process_video_exif(video_path, output_xml_file):
+def process_video_exif_gopro(video_path, output_xml_file):
+    if not os.path.isfile(video_path):
+        print("  - " + video_path + " not exist")
+        return False
     # check if output_xml_file exist
     if os.path.isfile(output_xml_file):
         print("  - " + output_xml_file + " exist")
@@ -153,13 +156,13 @@ def get_video_frame_count_and_fps(video_path):
     return frame_length, fps
 
 
-def find_cloest_gps(gps_data, timestamp_raw):
-    start_time = gps_data[0].timestampreal
-    timestamp = timestamp_raw + start_time
+def find_cloest_gps(gps_data, timestamp):
+    # start_time = gps_data[0].timestampreal
+    # timestamp = timestamp_raw + start_time
     for gps in gps_data:
         if gps.timestampreal > timestamp:
             return gps
-    return gps[-1]
+    return gps_data[-1]
 
 
 def check_gps_in_exif(image_path):
@@ -176,7 +179,7 @@ def check_gps_in_exif(image_path):
 def add_exif_to_image(gps_datas, video_path, focus_length = -1):
     # get the folder with video images
     images_folder = os.path.join(os.path.dirname(video_path), "images")
-    images_base_path = os.path.join(images_folder, os.path.basename(video_path)[:-4])
+    images_base_path = os.path.join(images_folder, os.path.basename(video_path).split(".")[0])
     frame_count, fps = get_video_frame_count_and_fps(video_path)
     if frame_count < 0 or fps < -1:
         print(f"VIDEO ERROR : {video_path} frame_count {frame_count}, fps {fps}")
@@ -197,7 +200,6 @@ def add_exif_to_image(gps_datas, video_path, focus_length = -1):
             image_idx = int(os.path.basename(image_path)[:-4])
             image_timestamp = image_idx * (1.0 / fps)
             gps_data = find_cloest_gps(gps_datas, image_timestamp)
-            # print(image_idx, gps_data)
             add_gps_exif(image_path, image_path, gps_data.lat, gps_data.lon, gps_data.alt, focus_length)
             progress_bar.update(1)
         progress_bar.refresh()
@@ -233,7 +235,7 @@ def parse_args():
 
     return args
 
-# python dm/panorama/gopro_gps_extractor.py --input_video_folder ${MAP_FOLDER}/${SESSION}
+# python mapmind/panorama/gopro_gps_extractor.py --input_video_folder data/go_pro_test
 if __name__ == "__main__":
     args = parse_args()
 
@@ -241,7 +243,7 @@ if __name__ == "__main__":
     for input_video in glob.glob(args.input_video_folder + "/*.360"):
         print("  - process", input_video)
         output_xml_file = input_video[:-4] + ".xml"
-        exif_ret = process_video_exif(input_video, output_xml_file)
+        exif_ret = process_video_exif_gopro(input_video, output_xml_file)
         gps_infos = extract_data_from_file(output_xml_file)
         add_exif_to_image(gps_infos, input_video)
 

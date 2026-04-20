@@ -10,7 +10,7 @@ SESSION=$2
 MAP_FOLDER=$1
 
 echo "====================== PROCESS VIDEOS ======================"
-python mapmind/panorama/extract_pinhole_images.py --input_video ${MAP_FOLDER}/${SESSION} --process_interval 10 --num_divide 6
+python mapmind/panorama/extract_pinhole_images.py --input_video ${MAP_FOLDER}/${SESSION} --process_interval 20 --num_divide 6
 
 export OPENCV_FFMPEG_READ_ATTEMPTS=10000
 python mapmind/panorama/extract_video_images.py --input_video ${MAP_FOLDER}/${SESSION} --ignore_prefix GS,VID_

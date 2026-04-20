@@ -8,6 +8,7 @@ import argparse
 import cv2
 from panorama_to_pinhole import *
 import gopro_gps_extractor
+import insta360_meta_extractor
 from tqdm import tqdm
 
 
@@ -114,25 +115,30 @@ def process_insta360_videos(input_video_path):
 
     for pano_raw_video in pano_raw_videos:
         output_mp4_path = pano_raw_video[:-4] + "mp4"
-        if os.path.isfile(output_mp4_path):
-            print("  - " + output_mp4_path + " exist")
-            continue
+        output_meta_path = pano_raw_video[:-4] + "meta"
 
         print(f"process {pano_raw_video} save to {output_mp4_path}")
         try:
-            command_line = f"""insta360_media_stitcher \
-            -inputs {pano_raw_video} -output {output_mp4_path} \
-            -stitch_type optflow -enable_stitchfusion \
-            -output_size 8000x4000 -bitrate 150000000 \
-            -enable_h265_encoder -enable_flowstate
-            """
-            print("  - run command line : " + command_line)
-            os.system(command_line)
+            if not os.path.isfile(output_mp4_path):
+                command_line = f"""insta360_media_stitcher \
+                -inputs {pano_raw_video} -output {output_mp4_path} \
+                -stitch_type optflow -enable_stitchfusion \
+                -output_size 8000x4000 -bitrate 150000000 \
+                -enable_h265_encoder -enable_flowstate
+                """
+                print("  - run command line : " + command_line)
+                os.system(command_line)
+
+            if not os.path.isfile(output_meta_path):
+                command_line = f"exiftool -ee -m {pano_raw_video} > {output_meta_path}"
+                print("  - run command line : " + command_line)
+                os.system(command_line)
+
         except Exception as e:
             print(f"failed when processing insta360_media_stitcher: {e}")
 
 
-# python mindmap/panorama/extract_pinhole_images.py --input_video data/insta360_test/
+# python mapmind/panorama/extract_pinhole_images.py --input_video data/insta360_test/
 if __name__ == "__main__":
     args = parse_args()
 
@@ -163,11 +169,18 @@ if __name__ == "__main__":
         # add exif from .360 files (of GoPro)
         video_path_360 = video_path[:-4] + ".360"
         output_xml_file = video_path[:-4] + ".xml"
-        exif_ret = gopro_gps_extractor.process_video_exif(video_path_360, output_xml_file)
+        output_meta_file = video_path[:-4] + ".meta"
+        exif_ret = gopro_gps_extractor.process_video_exif_gopro(video_path_360, output_xml_file)
         if exif_ret:
             has_gps = True
             gps_infos = gopro_gps_extractor.extract_data_from_file(output_xml_file)
             gopro_gps_extractor.add_exif_to_image(gps_infos, video_path_360, focus_length)
+        elif os.path.isfile(output_meta_file):
+            # this is insta360 file
+            gps_list = insta360_meta_extractor.read_gps_from_meta(output_meta_file)
+            insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
+            has_gps = len(gps_list) > 0
+
 
     # create a file to tell that image gps exist
     if has_gps:
