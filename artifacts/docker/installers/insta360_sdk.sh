@@ -20,7 +20,7 @@ fi
 apt-get install -y ./${SDK_NAME}
 
 # rm -rf /var/lib/apt/lists/*
-g++ insta_360_main.cc -std=c++11 -lMediaSDK -lpthread -lcuda -lMNN -o /usr/local/bin/insta360_media_stitcher
+g++ insta_360_main.cc -std=c++11 -lMediaSDK -lpthread  -o /usr/local/bin/insta360_media_stitcher
 echo "Build done!"
 
 apt-get remove libMediaSDK-dev
