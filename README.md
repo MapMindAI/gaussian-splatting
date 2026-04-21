@@ -33,10 +33,9 @@ EasyGaussianSplatting is suitable for:
 ## 1. Prepare the environment
 
 We recommend using the provided Docker image to ensure a consistent environment.
-`docker pull ghcr.io/mapmindai/gaussiansplatting:latest`
-(or you could build it if you wish to `docker build -f artifacts/docker/dev.dockerfile -t gaussian_splatting artifacts/docker/`)
+`docker pull ghcr.io/mapmindai/gaussiansplatting:latest`.
 
-run the container with:
+Run the container with:
 ```
 docker run -it --rm -v $(pwd):/workspace ghcr.io/mapmindai/gaussiansplatting:latest
 ```
@@ -45,6 +44,10 @@ docker run -it --rm -v $(pwd):/workspace ghcr.io/mapmindai/gaussiansplatting:lat
 <summary>Or build the environment if not using docker image</summary>
 
 Please refer to the docker file "artifacts/docker/dev.dockerfile" to build the environment.
+
+```
+docker build -f artifacts/docker/dev.dockerfile -t gaussian_splatting artifacts/docker/
+```
 
 In the repo we have rebuilt libs for docker env, if you don't use docker, you might need to build these libs:
 
@@ -64,17 +67,25 @@ pip install submodules/fused-ssim
 
 ## 3. Run With Drone Data
 
-1. Put the data to folder ([example google drive drone videos](https://drive.google.com/drive/folders/1TIcNHhN6kdgpAfCDT56L06swd2MmmnuI?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/1cGXAVGgjjHT833OYTxyXMw?pwd=pnmh)):
+1. Create the DJI mission Use the mission planning tool at https://yeliu-deepmirror.github.io/Tools/dji_mission_customer.html to generate a DJI flight task, then upload the task to the DJI drone and execute the capture.
+2. Collect the captured data. After the flight, copy all DJI videos and images into a single dataset folder. ([example google drive drone videos](https://drive.google.com/drive/folders/1TIcNHhN6kdgpAfCDT56L06swd2MmmnuI?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/1cGXAVGgjjHT833OYTxyXMw?pwd=pnmh)):
   * Put the drone video to the session_folder, along with the RST file (used to extract GPS message).
   * If you want to build with images, create a folder called "images", and put you photos there.
 
 ![example folder structure](assets/mapmind/example_drone_data.png)
 
-2. Run the script:
+3. Run the reconstruction pipeline:
 
 ```
 ./mapmind/run_drone.sh MAP_FOLDER SESSION_NAME
 ```
+
+4. The script will automatically:
+  * preprocess videos and subsample frames
+  * extract GPS and focus length metadata
+  * run COLMAP + GLOMAP mapping
+  * align the reconstruction with GPS to recover real-world scale
+  * process the scene for Gaussian Splatting
 
 Example usage : `./mapmind/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`.
 About 1 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1K8n5lYDqT42_YaPtC5t4T2Nx0TkEyDko/view?usp=drive_link))
@@ -86,9 +97,14 @@ After the building step finished, we will have the following results in the fold
 
 ## 4. Run with 360 data
 
-1. Put the data to folder ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)):
-  * Gopro Max 360 support GPS output. For gopro max videos, **"xxx.360"** <u>file is required to obtain the GPS data.</u> (see more in "mapmind/panorama/gopro_gps_extractor.py")
-  * Insta360 video will be stitched into panorama videos (automatically done in this repo), **".insv" file is all you needed**.
+1. Capture the videos. Record 360 videos using either GoPro Max or Insta360.
+  * GoPro Max has built-in GPS.
+  * Insta360 requires **connection to a phone** to include GPS, since GPS is obtained from the phone.
+2. Prepare the panorama files
+
+| GoPro Max|  Insta360 |
+| Use the official GoPro application to stitch the raw video into a standard panorama video. <br>For each capture, keep both: <br>* the raw .360 file; <br> the stitched .mp4 panorama video; <br>Both files should be uploaded into the dataset folder. | Copy the raw .insv file directly from the SD card. <br>No manual stitching is required. <u>High-quality stitching is included in our Docker pipeline.</u> |
+| ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)) |  |
 
 <details>
 <summary>Insta360 stitch with Linux SDK</summary>
@@ -116,11 +132,22 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 </details>
 
 
-2. Run the script:
+3. Run the script:
 
 ```
 ./mapmind/run_360.sh MAP_FOLDER SESSION_NAME
 ```
+
+4. The script performs:
+   - video preprocessing
+   - panorama-to-pinhole extraction
+   - high-quality stitching for Insta360 when required
+   - GPS extraction
+   - COLMAP + GLOMAP mapping
+   - GPS alignment for real-scale recovery
+   - Gaussian processing
+   - localization asset generation, including depth, TSDF mesh, and localization database
+
 
 Example usage : `./mapmind/run_360.sh /mnt/data/yeliu/gaussian_splatting insta360_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
