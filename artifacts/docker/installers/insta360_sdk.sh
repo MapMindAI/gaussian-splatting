@@ -7,12 +7,9 @@ pushd /tmp/installers
 
 SDK_NAME="libMediaSDK-dev.deb"
 
-apt-get update
-
 if [ -f "${SDK_NAME}" ]; then
   echo "File exists"
 else
-  apt-get install -y curl
   curl -L -o ${SDK_NAME} \
     https://github.com/MapMindAI/EasyGaussianSplatting/releases/download/v0/Insta360SDK.deb
 fi

@@ -51,7 +51,10 @@ colmap feature_extractor ${SHARE_CAMERA} \
 --database_path ${MAP_FOLDER}/${SESSION}/database.db \
 --image_path ${MAP_FOLDER}/${SESSION}/images \
 --ImageReader.camera_model=${CAMERA_MODEL} \
---ImageReader.mask_path ${MASK_DIR}
+--ImageReader.mask_path ${MASK_DIR} \
+--FeatureExtraction.type ALIKED_N16ROT \
+--AlikedExtraction.max_num_features 2048
+
 
 echo "====================== PROCESS VIDEO MATCHER ======================"
 
@@ -69,12 +72,16 @@ if [ -d "$TEST_PATH_GPS" ]; then
     --TwoViewGeometry.min_inlier_ratio 0.2 \
     --SpatialMatching.max_num_neighbors 50 \
     --SpatialMatching.max_distance 40 \
-    --SpatialMatching.ignore_z 1
+    --SpatialMatching.ignore_z 1 \
+    --FeatureMatching.type ALIKED_LIGHTGLUE \
+    --AlikedMatching.min_cossim 0.85
 fi
 if ((${NUM_IMAGES} < 500)); then
     echo "====================== exhaustive_matcher ======================"
     colmap exhaustive_matcher \
-    --database_path ${MAP_FOLDER}/${SESSION}/database.db
+    --database_path ${MAP_FOLDER}/${SESSION}/database.db \
+    --FeatureMatching.type ALIKED_LIGHTGLUE \
+    --AlikedMatching.min_cossim 0.85
 else
     COLMAP_VOC_PATH_32=vocab_tree_flickr100K_words32K.bin
     COLMAP_VOC_PATH_256=vocab_tree_flickr100K_words256K.bin
@@ -100,18 +107,25 @@ else
     --SequentialMatching.vocab_tree_path ${MODELS_FOLDER}/${VOC_NAME} \
     --SequentialMatching.loop_detection 1 \
     --SequentialMatching.loop_detection_num_images 50 \
-    --SequentialMatching.loop_detection_num_nearest_neighbors 20
+    --SequentialMatching.loop_detection_num_nearest_neighbors 20 \
+    --FeatureMatching.type ALIKED_LIGHTGLUE \
+    --AlikedMatching.min_cossim 0.85
 fi
 
 echo "====================== PROCESS GLOMAP MAPPER ======================"
 
-glomap mapper \
---database_path ${MAP_FOLDER}/${SESSION}/database.db \
---output_path ${MAP_FOLDER}/${SESSION}/sparse_raw \
---image_path ${MAP_FOLDER}/${SESSION}/images \
---ViewGraphCalib.thres_two_view_error 2 \
---RelPoseEstimation.max_epipolar_error 2 \
---BundleAdjustment.max_num_iterations 200
+# Optional but often needed: calibrate intrinsics from the view graph.
+# This modifies the database in-place, so work on a copy.
+cp ${MAP_FOLDER}/${SESSION}/database.db ${MAP_FOLDER}/${SESSION}/database_global.db
+colmap view_graph_calibrator \
+  --database_path ${MAP_FOLDER}/${SESSION}/database_global.db
+
+mkdir -p ${MAP_FOLDER}/${SESSION}/sparse_raw
+
+colmap global_mapper \
+  --database_path ${MAP_FOLDER}/${SESSION}/database_global.db \
+  --image_path ${MAP_FOLDER}/${SESSION}/images \
+  --output_path ${MAP_FOLDER}/${SESSION}/sparse_raw \
 
 # rotate the model to fit UE axis
 echo "====================== ROTATE COLMAP TO UE ======================"
