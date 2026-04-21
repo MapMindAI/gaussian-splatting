@@ -2,7 +2,8 @@
 # https://github.com/facebookresearch/dinov2/blob/main/notebooks/semantic_segmentation.ipynb
 # https://dinov2.metademolab.com/demos?category=segmentation
 import sys
-REPO_PATH = "/mnt/data/yeliu/Dev/dinov2" # Specify a local path to the repository (or use installed package instead)
+
+REPO_PATH = "/mnt/data/yeliu/Dev/dinov2"  # Specify a local path to the repository (or use installed package instead)
 sys.path.append(REPO_PATH)
 
 import math
@@ -34,18 +35,17 @@ DATASET_COLORMAPS = {
 
 import urllib
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train segmentation network')
-    parser.add_argument('--input',
-                        help='test image path',
-                        type=str)
-    parser.add_argument('--output',
-                        help='test image path',
-                        type=str)
-    parser.add_argument('--weights',
-                        help='cityscape pretrained weights',
-                        default="/mnt/data/yeliu/models/ppliteset_pp2torch_cityscape_pretrained.pth",
-                        type=str)
+    parser = argparse.ArgumentParser(description="Train segmentation network")
+    parser.add_argument("--input", help="test image path", type=str)
+    parser.add_argument("--output", help="test image path", type=str)
+    parser.add_argument(
+        "--weights",
+        help="cityscape pretrained weights",
+        default="/mnt/data/yeliu/models/ppliteset_pp2torch_cityscape_pretrained.pth",
+        type=str,
+    )
     args = parser.parse_args()
 
     return args
@@ -69,9 +69,8 @@ def render_segmentation(image, segmentation_logits, dataset):
 # 2 sky 12 115 people 21 26 60 128 water
 # 20 car 82 truck 116 127 bike 80 bus
 def ObjectEncode(labelmap, label_set=[2, 12, 115, 20, 80, 82, 116, 127]):
-    labelmap = labelmap.astype('int')
-    labelmap_rgb = np.zeros((labelmap.shape[0], labelmap.shape[1]),
-                            dtype=np.uint8)
+    labelmap = labelmap.astype("int")
+    labelmap_rgb = np.zeros((labelmap.shape[0], labelmap.shape[1]), dtype=np.uint8)
     for label in np.unique(labelmap):
         if not label in label_set:
             continue
@@ -80,24 +79,28 @@ def ObjectEncode(labelmap, label_set=[2, 12, 115, 20, 80, 82, 116, 127]):
 
 
 def subdivide_image_and_process(model, array_full):
-    half_shape = [int(array_full.shape[0]/2), int(array_full.shape[1]/2)]
-    image_rois = [[0, half_shape[0], 0, half_shape[1]],
-                  [half_shape[0], array_full.shape[0], 0, half_shape[1]],
-                  [0, half_shape[0], half_shape[1], array_full.shape[1]],
-                  [half_shape[0], array_full.shape[0], half_shape[1], array_full.shape[1]]]
+    half_shape = [int(array_full.shape[0] / 2), int(array_full.shape[1] / 2)]
+    image_rois = [
+        [0, half_shape[0], 0, half_shape[1]],
+        [half_shape[0], array_full.shape[0], 0, half_shape[1]],
+        [0, half_shape[0], half_shape[1], array_full.shape[1]],
+        [half_shape[0], array_full.shape[0], half_shape[1], array_full.shape[1]],
+    ]
     segmentation_logits = np.zeros((array_full.shape[0], array_full.shape[1]), dtype=np.uint8)
     for image_roi in image_rois:
-        array = array_full[image_roi[0]:image_roi[1], image_roi[2]:image_roi[3], :]
+        array = array_full[image_roi[0] : image_roi[1], image_roi[2] : image_roi[3], :]
         segmentation_logits_sub = inference_segmentor(model, array)[0]
-        segmentation_logits[image_roi[0]:image_roi[1], image_roi[2]:image_roi[3]] = segmentation_logits_sub
+        segmentation_logits[image_roi[0] : image_roi[1], image_roi[2] : image_roi[3]] = segmentation_logits_sub
     return segmentation_logits
 
 
 WARNED = False
+
+
 def run_image(model, image_path, save_path):
     image = Image.open(image_path).convert("RGB")
 
-    array = np.array(image)[:, :, ::-1] # BGR
+    array = np.array(image)[:, :, ::-1]  # BGR
     if array.shape[0] > 2000:
         global WARNED
         if not WARNED:
@@ -112,7 +115,7 @@ def run_image(model, image_path, save_path):
     image_rgba = np.zeros((array.shape[0], array.shape[1], 4), dtype=np.uint8)
     image_rgba[:, :, :3] = array[:, :, ::-1]
     image_rgba[:, :, 3] = 255 * ObjectEncode(segmentation_logits).astype(np.uint8)
-    img_pil = Image.fromarray(image_rgba, 'RGBA')
+    img_pil = Image.fromarray(image_rgba, "RGBA")
     img_pil.save(save_path + ".png")
 
     # render the debug image
@@ -120,7 +123,7 @@ def run_image(model, image_path, save_path):
     segmented_image.save(save_path + "_seg.jpg")
 
     # save the segmentation_logits
-    img_label = Image.fromarray(segmentation_logits.astype(np.uint8), 'L')
+    img_label = Image.fromarray(segmentation_logits.astype(np.uint8), "L")
     img_label.save(save_path + "_label.png")
 
 
@@ -139,7 +142,7 @@ if __name__ == "__main__":
     print("===> load", CHECKPOINT_URL)
 
     # cfg_str = load_config_from_url(CONFIG_URL)
-    with open(CONFIG_URL, 'r') as file:
+    with open(CONFIG_URL, "r") as file:
         cfg_str = file.read()
     cfg = mmcv.Config.fromstring(cfg_str, file_format=".py")
 
@@ -147,7 +150,6 @@ if __name__ == "__main__":
     load_checkpoint(model, CHECKPOINT_URL, map_location="cuda")
     model.cuda()
     model.eval()
-
 
     targets = []
     targets += glob.glob(args.input + "/*.jpg")
@@ -165,10 +167,10 @@ if __name__ == "__main__":
         print(f"Processing {cnt}/{len(targets)} {image_path}...")
         cnt += 1
 
-        image_sub_path = image_path[len(args.input):-4]
+        image_sub_path = image_path[len(args.input) : -4]
         save_path = args.output + "/" + image_sub_path
 
-        save_folder = '/'.join(save_path.split('/')[:-1])
+        save_folder = "/".join(save_path.split("/")[:-1])
         Path(save_folder).mkdir(parents=True, exist_ok=True)
         run_image(model, image_path, save_path)
 

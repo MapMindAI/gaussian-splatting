@@ -12,11 +12,11 @@ SESSION=$2
 
 echo "Process session : " ${SESSION}
 
-export PYTHONPATH="$PYTHONPATH:/mnt/data/yeliu/Dev/GaussianSplatting/submodules/libs"
+export PYTHONPATH="$PYTHONPATH:submodules/libs"
 OUTPUT_FOLDER=output
 
 echo "====================== PROCESS GAUSSSIAN DEPTH RENDER ======================"
-cd /mnt/data/yeliu/Dev/GaussianSplatting
+cd /EasyGaussianSplatting
 python render_depth.py \
 --source_path ${MAP_FOLDER}/${SESSION} \
 --model_path  ${MAP_FOLDER}/${SESSION}/${OUTPUT_FOLDER}

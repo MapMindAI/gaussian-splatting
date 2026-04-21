@@ -7,7 +7,6 @@ from pyzbar import pyzbar
 from qrcode_detection_yolo import QRCodeDetector
 
 
-
 def generate_qr_masks(image_dir, mask_dir):
     image_dir = Path(image_dir)
     mask_dir = Path(mask_dir)
@@ -70,7 +69,7 @@ def generate_qr_masks_yolo(image_dir, mask_dir, detect_model_path, trust_thresho
 
         if len(decoded_objs) > 0:
             for obj in decoded_objs:
-                points = obj['polygon']
+                points = obj["polygon"]
                 if len(points) > 4:
                     hull = cv2.convexHull(np.array([(p[0], p[1]) for p in points], dtype=np.float32))
                     points = hull.reshape(-1, 2)
@@ -99,12 +98,17 @@ def generate_qr_masks_yolo(image_dir, mask_dir, detect_model_path, trust_thresho
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Generate QR mask using pyzbar')
-    parser.add_argument('--image_dir', type=str)
-    parser.add_argument('--mask_dir', type=str)
-    parser.add_argument('--detect_model_path', default='/mnt/data/yeliu/Dev/GaussianSplatting/dm/colmap/model/best-yolov8.pt', type=str)
+    parser = argparse.ArgumentParser(description="Generate QR mask using pyzbar")
+    parser.add_argument("--image_dir", type=str)
+    parser.add_argument("--mask_dir", type=str)
+    parser.add_argument(
+        "--detect_model_path",
+        default="/mnt/data/yeliu/Dev/GaussianSplatting/dm/colmap/model/best-yolov8.pt",
+        type=str,
+    )
     args = parser.parse_args()
     return args
+
 
 if __name__ == "__main__":
     args = parse_args()

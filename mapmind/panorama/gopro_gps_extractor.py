@@ -8,9 +8,9 @@ import glob
 from PIL import Image
 from tqdm import tqdm
 
-EXIFTOOL_PATH="exiftool"
-GpsMeta = collections.namedtuple(
-    "GpsMeta", ["timestamp", "timestampreal", "lat", "lon", "alt"])
+EXIFTOOL_PATH = "exiftool"
+GpsMeta = collections.namedtuple("GpsMeta", ["timestamp", "timestampreal", "lat", "lon", "alt"])
+
 
 def process_video_exif_gopro(video_path, output_xml_file):
     if not os.path.isfile(video_path):
@@ -22,7 +22,9 @@ def process_video_exif_gopro(video_path, output_xml_file):
         return True
     try:
         # ./data/Image-ExifTool-13.25/exiftool -ee -G3 -api LargeFileSupport=1 -X -n -b xxx.360 > xxx.xml
-        command_line = EXIFTOOL_PATH + " -ee -G3 -api LargeFileSupport=1 -X -n -b " + video_path + " > " + output_xml_file
+        command_line = (
+            EXIFTOOL_PATH + " -ee -G3 -api LargeFileSupport=1 -X -n -b " + video_path + " > " + output_xml_file
+        )
         print("  - run command line : " + command_line)
         os.system(command_line)
         return True
@@ -71,9 +73,15 @@ def extract_data_from_file(file_path):
                     current_delta = 1.0 / frames_inlast_second
                 frames_inlast_second = 1
 
-            gps_data.append(GpsMeta(timestamp=timestamp,
-                                    timestampreal=timestamp + current_delta * (frames_inlast_second - 1),
-                                    lat=gps_info["latitude"], lon=gps_info["longitude"], alt=gps_info["altitude"]))
+            gps_data.append(
+                GpsMeta(
+                    timestamp=timestamp,
+                    timestampreal=timestamp + current_delta * (frames_inlast_second - 1),
+                    lat=gps_info["latitude"],
+                    lon=gps_info["longitude"],
+                    alt=gps_info["altitude"],
+                )
+            )
             gps_info = {"latitude": None, "longitude": None, "altitude": None}
     return gps_data
 
@@ -105,7 +113,7 @@ def add_gps_exif(image_path, output_path, lat, lon, alt, focus_length):
     # Get or initialize EXIF data
     # exif_dict = piexif.load(img.info.get("exif", b""))
     try:
-        exif_dict = piexif.load(img.info['exif'])
+        exif_dict = piexif.load(img.info["exif"])
     except KeyError:
         exif_dict = {}
 
@@ -126,12 +134,15 @@ def add_gps_exif(image_path, output_path, lat, lon, alt, focus_length):
 
     # Convert GPS data
     gps_ifd = {
-        piexif.GPSIFD.GPSLatitudeRef: b'N' if lat >= 0 else b'S',
-        piexif.GPSIFD.GPSLatitude: to_deg(abs(lat), b'N')[0],
-        piexif.GPSIFD.GPSLongitudeRef: b'E' if lon >= 0 else b'W',
-        piexif.GPSIFD.GPSLongitude: to_deg(abs(lon), b'E')[0],
+        piexif.GPSIFD.GPSLatitudeRef: b"N" if lat >= 0 else b"S",
+        piexif.GPSIFD.GPSLatitude: to_deg(abs(lat), b"N")[0],
+        piexif.GPSIFD.GPSLongitudeRef: b"E" if lon >= 0 else b"W",
+        piexif.GPSIFD.GPSLongitude: to_deg(abs(lon), b"E")[0],
         piexif.GPSIFD.GPSAltitudeRef: 0 if alt >= 0 else 1,  # 0 for above sea level, 1 for below
-        piexif.GPSIFD.GPSAltitude: (int(abs(alt) * 100), 100),  # Altitude in meters with 2 decimal precision
+        piexif.GPSIFD.GPSAltitude: (
+            int(abs(alt) * 100),
+            100,
+        ),  # Altitude in meters with 2 decimal precision
     }
 
     # Add GPS data to EXIF
@@ -140,6 +151,7 @@ def add_gps_exif(image_path, output_path, lat, lon, alt, focus_length):
     exif_bytes = piexif.dump(exif_dict)
     img.save(output_path, "jpeg", exif=exif_bytes)
     # print(f"GPS data with altitude added to {output_path}")
+
 
 def get_video_frame_count_and_fps(video_path):
     # get the video information
@@ -168,7 +180,7 @@ def find_cloest_gps(gps_data, timestamp):
 def check_gps_in_exif(image_path):
     try:
         with Image.open(image_path) as img:
-            exif_dict = piexif.load(img.info['exif'])
+            exif_dict = piexif.load(img.info["exif"])
             if "GPS" in exif_dict:
                 return True
             return False
@@ -176,7 +188,7 @@ def check_gps_in_exif(image_path):
         return False
 
 
-def add_exif_to_image(gps_datas, video_path, focus_length = -1):
+def add_exif_to_image(gps_datas, video_path, focus_length=-1):
     # get the folder with video images
     images_folder = os.path.join(os.path.dirname(video_path), "images")
     images_base_path = os.path.join(images_folder, os.path.basename(video_path).split(".")[0])
@@ -200,7 +212,14 @@ def add_exif_to_image(gps_datas, video_path, focus_length = -1):
             image_idx = int(os.path.basename(image_path)[:-4])
             image_timestamp = image_idx * (1.0 / fps)
             gps_data = find_cloest_gps(gps_datas, image_timestamp)
-            add_gps_exif(image_path, image_path, gps_data.lat, gps_data.lon, gps_data.alt, focus_length)
+            add_gps_exif(
+                image_path,
+                image_path,
+                gps_data.lat,
+                gps_data.lon,
+                gps_data.alt,
+                focus_length,
+            )
             progress_bar.update(1)
         progress_bar.refresh()
         progress_bar.close()
@@ -227,13 +246,12 @@ def add_exif_to_image(gps_datas, video_path, focus_length = -1):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Get gps from exif')
-    parser.add_argument('--input_video_folder',
-                        help='input video path',
-                        type=str)
+    parser = argparse.ArgumentParser(description="Get gps from exif")
+    parser.add_argument("--input_video_folder", help="input video path", type=str)
     args = parser.parse_args()
 
     return args
+
 
 # python mapmind/panorama/gopro_gps_extractor.py --input_video_folder data/go_pro_test
 if __name__ == "__main__":

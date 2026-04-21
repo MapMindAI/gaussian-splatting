@@ -56,7 +56,7 @@ if [ "$USE_DEPTH" = true ] ; then
       echo "$DEPTH_DIRECTORY does not exist."
       echo "====================== PROCESS DEPTH ESTIMATION ======================"
       # prcocess each folder separately
-      cd /mnt/data/yeliu/gaussian_splatting/Depth-Anything-V2
+      cd /EasyGaussianSplatting/submodules/Depth-Anything-V2
       for IMAGE_FOLDER in ${MAP_FOLDER}/${SESSION}${IF_USE_DENSE}/images/*/; do
           PATH_SPLIT=(${IMAGE_FOLDER//// })
           FOLDER_NAME=(${PATH_SPLIT[-1]})
@@ -75,7 +75,7 @@ if [ "$USE_DEPTH" = true ] ; then
           --outdir ${MAP_FOLDER}/${SESSION}/depths
       fi
 
-      cd /mnt/data/yeliu/Dev/GaussianSplatting
+      cd /EasyGaussianSplatting
       python utils/make_depth_scale.py \
       --base_dir ${MAP_FOLDER}/${SESSION}${IF_USE_DENSE} \
       --depths_dir ${MAP_FOLDER}/${SESSION}/depths \
@@ -90,7 +90,7 @@ echo "====================== PROCESS GAUSSSIAN SPLATTING ======================"
 echo "====================== ${IF_USE_DENSE} ${OUTPUT_FOLDER} ${ITERATIONS} ======================"
 echo "To do the full training routine and avoid running out of memory, you can increase the --densify_grad_threshold (0.0002), --densification_interval (100) or reduce the value of --densify_until_iter (15_000)."
 echo "use --start_checkpoint ${MAP_FOLDER}/${SESSION}/${OUTPUT_FOLDER} to continue training"
-cd /mnt/data/yeliu/Dev/GaussianSplatting
+cd /EasyGaussianSplatting
 python train.py ${DAY_NIGHT_SCENE_LINE} ${EXPOSURE_GS_ARG} ${DEPTH_GS_ARG} \
 --source_path ${MAP_FOLDER}/${SESSION}${IF_USE_DENSE} \
 --model_path  ${MAP_FOLDER}/${SESSION}/${OUTPUT_FOLDER} \

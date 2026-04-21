@@ -9,6 +9,8 @@ fi
 SESSION=$2
 MAP_FOLDER=$1
 
+export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
 echo "====================== PROCESS VIDEOS ======================"
 python mapmind/panorama/extract_pinhole_images.py --input_video ${MAP_FOLDER}/${SESSION} --process_interval 20 --num_divide 6
 

@@ -13,6 +13,7 @@ from tqdm import tqdm
 # cp -rfv 2025Nanchansi /mnt/gz01/experiment/mobili/reconstruction/2025Nanchansi
 # ls /mnt/gz01/experiment/mobili/reconstruction/
 
+
 # process video using ffmpeg
 # ffmpeg -i input.mp4 -vf fps=1/10 output_%04d.png
 def extract_frames(video_path, output_dir, interval=1):
@@ -21,7 +22,7 @@ def extract_frames(video_path, output_dir, interval=1):
         print("cannot open video", video_path)
         return
 
-    video_width  = int(cap.get(3))
+    video_width = int(cap.get(3))
     video_height = int(cap.get(4))
     frame_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -47,12 +48,12 @@ def extract_frames(video_path, output_dir, interval=1):
             break
 
         frame_count += 1
-        if frame_count%process_interval != 1:
+        if frame_count % process_interval != 1:
             continue
 
         if frame_count == 1:
             progress_bar.update(1)
-        else :
+        else:
             progress_bar.update(process_interval)
 
         image_path = os.path.join(output_dir, "{:05d}".format(frame_count) + ".jpg")
@@ -63,50 +64,49 @@ def extract_frames(video_path, output_dir, interval=1):
 
 def parse_srt(srt_path):
     subtitles = []
-    with open(srt_path, 'r', encoding='utf-8') as f:
-        lines = f.read().split('\n\n')
+    with open(srt_path, "r", encoding="utf-8") as f:
+        lines = f.read().split("\n\n")
 
     for block in lines:
-        lines = block.strip().split('\n')
+        lines = block.strip().split("\n")
         if len(lines) < 3:
             continue
 
         time_str = lines[1].strip()
-        start_str, end_str = time_str.split(' --> ')
+        start_str, end_str = time_str.split(" --> ")
         start_time = srt_to_seconds(start_str)
         end_time = srt_to_seconds(end_str)
-        content = '\n'.join(lines[2:]).strip()
+        content = "\n".join(lines[2:]).strip()
 
-        subtitles.append({
-            'start': start_time,
-            'end': end_time,
-            'content': content
-        })
+        subtitles.append({"start": start_time, "end": end_time, "content": content})
     return subtitles
 
+
 def srt_to_seconds(time_str):
-    h, m, s = time_str.split(':')
-    s, ms = s.split(',')
-    return int(h)*3600 + int(m)*60 + int(s) + int(ms)/1000
+    h, m, s = time_str.split(":")
+    s, ms = s.split(",")
+    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+
 
 def find_subtitles(subtitles, timestamp):
     subtitle = None
-    if timestamp < subtitles[0]['start']:
-        subtitle = subtitles[0]['content']
-    if timestamp > subtitles[-1]['end']:
-        subtitle = subtitles[-1]['content']
+    if timestamp < subtitles[0]["start"]:
+        subtitle = subtitles[0]["content"]
+    if timestamp > subtitles[-1]["end"]:
+        subtitle = subtitles[-1]["content"]
     for sub in subtitles:
-        if sub['start'] <= timestamp <= sub['end']:
-            subtitle = sub['content']
+        if sub["start"] <= timestamp <= sub["end"]:
+            subtitle = sub["content"]
             break
     assert subtitle is not None
     return subtitle
 
+
 def extract_lat_lon_alt(input_string):
-    lat_pattern = r'latitude: ([\d\.-]+)'
-    lon_pattern = r'longitude: ([\d\.-]+)'
-    alt_pattern = r'rel_alt: ([\d\.-]+)'
-    focal_len_pattern = r'focal_len: ([\d\.-]+)'
+    lat_pattern = r"latitude: ([\d\.-]+)"
+    lon_pattern = r"longitude: ([\d\.-]+)"
+    alt_pattern = r"rel_alt: ([\d\.-]+)"
+    focal_len_pattern = r"focal_len: ([\d\.-]+)"
 
     lat_match = re.search(lat_pattern, input_string)
     lon_match = re.search(lon_pattern, input_string)
@@ -119,6 +119,7 @@ def extract_lat_lon_alt(input_string):
     focal_len = float(focal_len_match.group(1)) if focal_len_match else None
 
     return latitude, longitude, abs_alt, focal_len
+
 
 def to_deg(value, ref):
     """
@@ -148,19 +149,22 @@ def add_gps_exif(image_path, output_path, lat, lon, alt, focal_len):
     # Get or initialize EXIF data
     # exif_dict = piexif.load(img.info.get("exif", b""))
     try:
-        exif_dict = piexif.load(img.info['exif'])
+        exif_dict = piexif.load(img.info["exif"])
     except KeyError:
         exif_dict = {}
     # exif_dict["Exif"][piexif.ExifIFD.FocalLengthIn35mmFilm] = focal_len
 
     # Convert GPS data
     gps_ifd = {
-        piexif.GPSIFD.GPSLatitudeRef: b'N' if lat >= 0 else b'S',
-        piexif.GPSIFD.GPSLatitude: to_deg(abs(lat), b'N')[0],
-        piexif.GPSIFD.GPSLongitudeRef: b'E' if lon >= 0 else b'W',
-        piexif.GPSIFD.GPSLongitude: to_deg(abs(lon), b'E')[0],
+        piexif.GPSIFD.GPSLatitudeRef: b"N" if lat >= 0 else b"S",
+        piexif.GPSIFD.GPSLatitude: to_deg(abs(lat), b"N")[0],
+        piexif.GPSIFD.GPSLongitudeRef: b"E" if lon >= 0 else b"W",
+        piexif.GPSIFD.GPSLongitude: to_deg(abs(lon), b"E")[0],
         piexif.GPSIFD.GPSAltitudeRef: 0 if alt >= 0 else 1,  # 0 for above sea level, 1 for below
-        piexif.GPSIFD.GPSAltitude: (int(abs(alt) * 100), 100),  # Altitude in meters with 2 decimal precision
+        piexif.GPSIFD.GPSAltitude: (
+            int(abs(alt) * 100),
+            100,
+        ),  # Altitude in meters with 2 decimal precision
     }
 
     # Add GPS data to EXIF
@@ -176,7 +180,7 @@ def process_video(video_path, output_dir, image_interval_sec):
     subtitle_path = video_path[:-3] + "SRT"
 
     print("===> extract images ", video_path, image_interval_sec)
-    images = extract_frames(video_path, output_dir, image_interval_sec);
+    images = extract_frames(video_path, output_dir, image_interval_sec)
 
     if len(images) == 0:
         return
@@ -199,13 +203,12 @@ def process_video(video_path, output_dir, image_interval_sec):
 # output_dir = "test"
 # process_video(video_path, output_dir)
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train segmentation network')
-    parser.add_argument('--image_interval_sec', help='frame process interval', default=1.0, type=float)
-    parser.add_argument('--input_video',
-                        help='input 360 video path',
-                        type=str)
+    parser = argparse.ArgumentParser(description="Train segmentation network")
+    parser.add_argument("--image_interval_sec", help="frame process interval", default=1.0, type=float)
+    parser.add_argument("--input_video", help="input 360 video path", type=str)
     args = parser.parse_args()
     return args
+
 
 # python dm/colmap/drone_image_extractor.py --input_video data/DJI_test
 if __name__ == "__main__":
@@ -214,8 +217,8 @@ if __name__ == "__main__":
     print("===> Process all the video", args.input_video)
     videos = glob.glob(args.input_video + "/DJI*.MP4")
     if len(videos) == 0:
-      print("No video found")
-      exit(0)
+        print("No video found")
+        exit(0)
 
     # create folder to save the images
     save_folder = os.path.join(args.input_video, "images")

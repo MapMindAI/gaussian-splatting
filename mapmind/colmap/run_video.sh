@@ -55,9 +55,9 @@ colmap feature_extractor ${SHARE_CAMERA} \
 
 echo "====================== PROCESS VIDEO MATCHER ======================"
 
-MOUNT_FOLDER=/mnt/data
-if [ ! -d "$MOUNT_FOLDER" ]; then
-    MOUNT_FOLDER=/mnt/ml-experiment-data
+MODELS_FOLDER=/EasyGaussianSplatting/data/models
+if [ ! -d "$MODELS_FOLDER" ]; then
+    mkdir -p ${MODELS_FOLDER}
 fi
 
 NUM_IMAGES=$(find ${MAP_FOLDER}/${SESSION}/images -type f | wc -l)
@@ -76,18 +76,28 @@ if ((${NUM_IMAGES} < 500)); then
     colmap exhaustive_matcher \
     --database_path ${MAP_FOLDER}/${SESSION}/database.db
 else
-    COLMAP_VOC_PATH_32=${MOUNT_FOLDER}/yeliu/models/vocab_tree_flickr100K_words32K.bin
-    COLMAP_VOC_PATH_256=${MOUNT_FOLDER}/yeliu/models/vocab_tree_flickr100K_words256K.bin
-    VOC_PATH=${COLMAP_VOC_PATH_32}
+    COLMAP_VOC_PATH_32=vocab_tree_flickr100K_words32K.bin
+    COLMAP_VOC_PATH_256=vocab_tree_flickr100K_words256K.bin
+    VOC_NAME=${COLMAP_VOC_PATH_32}
     if ((${NUM_IMAGES} > 1500)); then
-        VOC_PATH=${COLMAP_VOC_PATH_256}
+        VOC_NAME=${COLMAP_VOC_PATH_256}
     fi
-    echo ${VOC_PATH}
+    echo ${VOC_NAME}
+
+    # check voc exist and download
+    if [ -e "${MODELS_FOLDER}/${VOC_NAME}" ]; then
+        echo "voc exists"
+    else
+        echo "voc not exists, process download"
+        curl -L -o ${MODELS_FOLDER}/${VOC_NAME} \
+          https://github.com/MapMindAI/EasyGaussianSplatting/releases/download/v0/${VOC_NAME}
+    fi
+
     echo "====================== sequential_matcher ======================"
     colmap sequential_matcher \
     --database_path ${MAP_FOLDER}/${SESSION}/database.db \
     --TwoViewGeometry.min_inlier_ratio 0.2 \
-    --SequentialMatching.vocab_tree_path ${VOC_PATH} \
+    --SequentialMatching.vocab_tree_path ${MODELS_FOLDER}/${VOC_NAME} \
     --SequentialMatching.loop_detection 1 \
     --SequentialMatching.loop_detection_num_images 50 \
     --SequentialMatching.loop_detection_num_nearest_neighbors 20

@@ -13,16 +13,15 @@ from tqdm import tqdm
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train segmentation network')
-    parser.add_argument('--num_divide', help='number of divide', default=4, type=int)
-    parser.add_argument('--process_interval', help='frame process interval', default=60, type=int)
-    parser.add_argument('--jump_jump', help='jump some of the frames', default=0, type=int)
-    parser.add_argument('--input_video',
-                        help='input 360 video path',
-                        type=str)
+    parser = argparse.ArgumentParser(description="Train segmentation network")
+    parser.add_argument("--num_divide", help="number of divide", default=4, type=int)
+    parser.add_argument("--process_interval", help="frame process interval", default=60, type=int)
+    parser.add_argument("--jump_jump", help="jump some of the frames", default=0, type=int)
+    parser.add_argument("--input_video", help="input 360 video path", type=str)
     args = parser.parse_args()
 
     return args
+
 
 def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_folder):
     cap = cv2.VideoCapture(video_path)
@@ -31,7 +30,7 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
         print("cannot open video", video_path)
         return -1
 
-    video_width  = int(cap.get(3))
+    video_width = int(cap.get(3))
     video_height = int(cap.get(4))
     frame_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -67,7 +66,7 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
         image_count = len(glob.glob(os.path.join(video_base_path + "_" + str(i), "*.jpg")))
         desired_image_count = int(np.ceil(frame_length / process_interval))
         if jump_jump:
-            if i%2 == 0:
+            if i % 2 == 0:
                 desired_image_count = int(desired_image_count / 2)
             else:
                 desired_image_count = int(np.ceil(desired_image_count / 2))
@@ -78,7 +77,6 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
         print("  - the video has already been processed")
         return focus_length
 
-
     frame_count = 0
     saved_frame_count = 0
     progress_bar = tqdm(range(0, frame_length), desc="Loading video")
@@ -88,17 +86,17 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
             break
 
         frame_count += 1
-        if frame_count%process_interval != 1:
+        if frame_count % process_interval != 1:
             continue
 
         if frame_count == 1:
             progress_bar.update(1)
-        else :
+        else:
             progress_bar.update(process_interval)
         panorama_sampler = panorama_to_sampler(frame)
 
         for i in range(num_divide):
-            if jump_jump and i%2 != saved_frame_count%2:
+            if jump_jump and i % 2 != saved_frame_count % 2:
                 continue
             image_a = panorama_to_pinhole(panorama_sampler, output_resolu, output_focal, [0, yaw_angles[i], 0])
             image_path = os.path.join(video_base_path + "_" + str(i), "{:05d}".format(frame_count) + ".jpg")
@@ -152,8 +150,8 @@ if __name__ == "__main__":
     pano_videos += glob.glob(os.path.join(args.input_video, "VID*.mp4"))
 
     if len(pano_videos) == 0:
-      print("No pano video found")
-      exit(0)
+        print("No pano video found")
+        exit(0)
 
     # create folder to save the images
     save_folder = os.path.join(args.input_video, "images")
@@ -162,7 +160,13 @@ if __name__ == "__main__":
     has_gps = False
     for video_path in pano_videos:
         print("process", video_path)
-        focus_length = read_video_frames(args.num_divide, args.process_interval, args.jump_jump, video_path, save_folder)
+        focus_length = read_video_frames(
+            args.num_divide,
+            args.process_interval,
+            args.jump_jump,
+            video_path,
+            save_folder,
+        )
         if focus_length < 0:
             continue
 
@@ -180,7 +184,6 @@ if __name__ == "__main__":
             gps_list = insta360_meta_extractor.read_gps_from_meta(output_meta_file)
             insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
             has_gps = len(gps_list) > 0
-
 
     # create a file to tell that image gps exist
     if has_gps:

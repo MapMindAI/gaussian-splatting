@@ -124,9 +124,9 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 
 Example usage : `./mapmind/run_360.sh /mnt/data/yeliu/gaussian_splatting insta360_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
-After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
+After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder.
 
 # Adjust Gaussian Parameters
 
-* You could refer to the raw repo, and the build script "mapmind/colmap/gaussian.sh" to adjust your parameters.
+* You could refer to the [raw repo readme](README_gaussian_splatting.md), and the build script "mapmind/colmap/gaussian.sh" to adjust your parameters.
 * You can move to "run_xxx.sh" to adjust parameter for videos.

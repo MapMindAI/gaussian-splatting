@@ -10,8 +10,7 @@ from datetime import datetime
 import re
 from gopro_gps_extractor import add_gps_exif, GpsMeta, add_exif_to_image
 
-ImuMeta = collections.namedtuple(
-    "ImuMeta", ["timestamp", "acc", "gyr"])
+ImuMeta = collections.namedtuple("ImuMeta", ["timestamp", "acc", "gyr"])
 
 
 def process_video_exif_insta360(video_path, output_meta_file):
@@ -76,10 +75,7 @@ def dms_to_decimal(text):
         113 deg 30' 50.35" E
     to decimal degrees.
     """
-    m = re.match(
-        r'^\s*(\d+)\s+deg\s+(\d+)\'\s+([\d.]+)"\s+([NSEW])\s*$',
-        text
-    )
+    m = re.match(r'^\s*(\d+)\s+deg\s+(\d+)\'\s+([\d.]+)"\s+([NSEW])\s*$', text)
     if not m:
         raise ValueError(f"Invalid DMS format: {text}")
 
@@ -169,7 +165,15 @@ def read_gps_from_meta(path):
                 longitude = dms_to_decimal(value)
 
                 # assume longitude is the last field of one GPS block
-                if None not in (create_date, speed, track, altitude, base_timestamp, latitude, longitude):
+                if None not in (
+                    create_date,
+                    speed,
+                    track,
+                    altitude,
+                    base_timestamp,
+                    latitude,
+                    longitude,
+                ):
                     # GPS timestamps are stored with only 1-second precision, while data arrives at 10 Hz.
                     # If consecutive records have the same GPS Date/Time, add 0.1 s per repeated sample
                     # so each record gets a unique timestamp in chronological order.
@@ -203,13 +207,12 @@ def read_gps_from_meta(path):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Get gps from exif')
-    parser.add_argument('--input_video_folder',
-                        help='input video path',
-                        type=str)
+    parser = argparse.ArgumentParser(description="Get gps from exif")
+    parser.add_argument("--input_video_folder", help="input video path", type=str)
     args = parser.parse_args()
 
     return args
+
 
 # python mapmind/panorama/insta360_meta_extractor.py --input_video_folder data/insta360_test/
 if __name__ == "__main__":

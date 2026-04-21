@@ -13,9 +13,7 @@ from colmap_loader import *
 
 def read_array(path):
     with open(path, "rb") as fid:
-        width, height, channels = np.genfromtxt(
-            fid, delimiter="&", max_rows=1, usecols=(0, 1, 2), dtype=int
-        )
+        width, height, channels = np.genfromtxt(fid, delimiter="&", max_rows=1, usecols=(0, 1, 2), dtype=int)
         fid.seek(0)
         num_delimiter = 0
         byte = fid.read(1)
@@ -45,7 +43,7 @@ def load_colmap_model(colmap_dir):
     return images, cameras
 
 
-def pose_process_mesh(mesh, min_cluster_triangles = 200):
+def pose_process_mesh(mesh, min_cluster_triangles=200):
     mesh = mesh.filter_smooth_simple(number_of_iterations=1)
     mesh = mesh.remove_degenerate_triangles()
     mesh = mesh.remove_duplicated_triangles()
@@ -53,13 +51,14 @@ def pose_process_mesh(mesh, min_cluster_triangles = 200):
     mesh = mesh.remove_non_manifold_edges()
 
     # Remove very small triangle clusters
-    triangle_clusters, cluster_n_triangles, cluster_area = mesh.cluster_connected_triangles()
+    (
+        triangle_clusters,
+        cluster_n_triangles,
+        cluster_area,
+    ) = mesh.cluster_connected_triangles()
 
     # Identify clusters to keep
-    triangle_mask = [
-        cluster_n_triangles[cluster_id] > min_cluster_triangles
-        for cluster_id in triangle_clusters
-    ]
+    triangle_mask = [cluster_n_triangles[cluster_id] > min_cluster_triangles for cluster_id in triangle_clusters]
 
     mesh.remove_triangles_by_mask(np.logical_not(triangle_mask))
     mesh.remove_unreferenced_vertices()
@@ -74,7 +73,7 @@ def integrate_tsdf(colmap_dir, rgb_dir, depth_dir, voxel_length=0.2, sdf_trunc=0
     tsdf_volume = o3d.pipelines.integration.ScalableTSDFVolume(
         voxel_length=voxel_length,
         sdf_trunc=sdf_trunc,
-        color_type=o3d.pipelines.integration.TSDFVolumeColorType.RGB8
+        color_type=o3d.pipelines.integration.TSDFVolumeColorType.RGB8,
     )
 
     progress_bar = tqdm(range(0, len(images)), desc="TSDF")
@@ -107,15 +106,16 @@ def integrate_tsdf(colmap_dir, rgb_dir, depth_dir, voxel_length=0.2, sdf_trunc=0
             fx=cam.params[0],
             fy=cam.params[1],
             cx=cam.params[2],
-            cy=cam.params[3]
+            cy=cam.params[3],
         )
 
         pose = colmap_to_opengl(image.qvec, image.tvec)
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            rgb_o3d, depth_o3d,
+            rgb_o3d,
+            depth_o3d,
             depth_scale=1000.0,
             depth_trunc=20.0,
-            convert_rgb_to_intensity=False
+            convert_rgb_to_intensity=False,
         )
 
         tsdf_volume.integrate(rgbd, intrinsic, pose)
@@ -132,17 +132,17 @@ def integrate_tsdf(colmap_dir, rgb_dir, depth_dir, voxel_length=0.2, sdf_trunc=0
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', help='input model path', type=str)
-    parser.add_argument('--images', help='images path', default="images", type=str)
-    parser.add_argument('--sparse', help='sparse path', default="sparse/0", type=str)
-    parser.add_argument('--depths', help='depths path', default="output/depth", type=str)
-    parser.add_argument('--viewer', help='run viewer', default=0, type=int)
+    parser.add_argument("--model_path", help="input model path", type=str)
+    parser.add_argument("--images", help="images path", default="images", type=str)
+    parser.add_argument("--sparse", help="sparse path", default="sparse/0", type=str)
+    parser.add_argument("--depths", help="depths path", default="output/depth", type=str)
+    parser.add_argument("--viewer", help="run viewer", default=0, type=int)
     args = parser.parse_args()
     return args
 
 
 # Example usage: python dm/tsdf/tsdf_modeling.py --model_path /mnt/ml-experiment-data/yeliu/gaussian_splatting/GoPro/NanshaOffice
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
 
     colmap_dir = os.path.join(args.model_path, args.sparse)

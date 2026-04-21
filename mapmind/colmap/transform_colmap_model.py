@@ -18,7 +18,7 @@ from utm import LatLonToUTMXY
 
 def gps_to_utm(lat, lon):
     utm_zone = int((lon + 180) / 6) + 1
-    hemisphere = 'north' if lat >= 0 else 'south'
+    hemisphere = "north" if lat >= 0 else "south"
     # from pyproj import Transformer, CRS
     # transformer = Transformer.from_crs("EPSG:4326", f"EPSG:326{utm_zone}" if hemisphere == 'north' else f"EPSG:327{utm_zone}", always_xy=True)
     # easting, northing = transformer.transform(lon, lat)
@@ -53,9 +53,7 @@ def read_images_gps_prior(db_path):
     return image_gpses
 
 
-def trajectory_align_umeyama(
-    trajectory_reference, trajectory
-):
+def trajectory_align_umeyama(trajectory_reference, trajectory):
     """Align the two trajectory: trajectory_reference = s * R * trajectory + t
     Implementation of the paper: S. Umeyama, Least-Squares Estimation
     of Transformation Parameters Between Two Point Patterns,
@@ -105,12 +103,8 @@ def trajectory_align_umeyama(
     rotation_estimate = np.dot(u_svd, np.dot(s_mat, np.transpose(v_svd)))
     scale = 1.0 / sigma_sqr * np.trace(np.dot(d_svd, s_mat))
 
-    translation_estimate = centroid_reference - scale * np.dot(
-        rotation_estimate, centroid
-    )
-    error = trajectory_reference - (
-        scale * np.dot(rotation_estimate, trajectory) + translation_estimate
-    )
+    translation_estimate = centroid_reference - scale * np.dot(rotation_estimate, centroid)
+    error = trajectory_reference - (scale * np.dot(rotation_estimate, trajectory) + translation_estimate)
     return scale, rotation_estimate, translation_estimate, np.linalg.norm(error, axis=0)
 
 
@@ -174,14 +168,15 @@ def filerUtmZone(utm_zones):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--database_path', help='input database path', type=str)
-    parser.add_argument('--model_path', help='input model path', type=str)
-    parser.add_argument('--output_model_path', help='output model path', type=str)
+    parser.add_argument("--database_path", help="input database path", type=str)
+    parser.add_argument("--model_path", help="input model path", type=str)
+    parser.add_argument("--output_model_path", help="output model path", type=str)
     args = parser.parse_args()
     return args
 
+
 def log_print(f_log, *args, **kwargs):
-    print(*args, **kwargs)          # print on screen
+    print(*args, **kwargs)  # print on screen
     print(*args, **kwargs, file=f_log)  # write to file
 
 
@@ -197,12 +192,11 @@ python dm/colmap/transform_colmap_model.py \
 --output_model_path data/SYU/sparse_gps/0
 """
 if __name__ == "__main__":
-    args = parse_args();
+    args = parse_args()
     ""
     log_path = os.path.join(args.output_model_path, "transform_log.txt")
     os.makedirs(args.output_model_path, exist_ok=True)
     with open(log_path, "w") as f_log:
-
         image_gpses = read_images_gps_prior(args.database_path)
 
         # read the colmap model
@@ -237,7 +231,10 @@ if __name__ == "__main__":
         points_gps = np.transpose(points_gps[mask, :] - gps_mean)
         points_sfm = np.transpose(points_sfm[mask, :])
         radius = np.mean(np.linalg.norm(points_gps, axis=0))
-        log_print(f_log, f"  - find {points_gps.shape[1]} / {len(utm_zones)} pairs, in UTM {utm_zone}, radius : {radius}")
+        log_print(
+            f_log,
+            f"  - find {points_gps.shape[1]} / {len(utm_zones)} pairs, in UTM {utm_zone}, radius : {radius}",
+        )
         log_print(f_log, f"  - gps_mean: {gps_mean}")
 
         if points_gps.shape[1] < 5:
@@ -256,7 +253,10 @@ if __name__ == "__main__":
                 scale = 1.0
 
             # read the colmap model
-            log_print(f_log, f"  - estimated transformation:\n  scale = {scale}\n  rotation =\n{rotation}\n  translation = {translation.reshape(-1).tolist()}")
+            log_print(
+                f_log,
+                f"  - estimated transformation:\n  scale = {scale}\n  rotation =\n{rotation}\n  translation = {translation.reshape(-1).tolist()}",
+            )
             translation = np.zeros((3, 1))
             log_print(f_log, f"But use (0, 0, 0) as translation currently!")
 
@@ -268,12 +268,20 @@ if __name__ == "__main__":
             camera_to_world_trans = -np.dot(camera_to_world_rot, image.tvec.reshape((3, 1)))
 
             utm_to_camera_rot = np.transpose(np.dot(rotation, camera_to_world_rot))
-            utm_to_camera_trans = -np.dot(utm_to_camera_rot, scale * np.dot(rotation, camera_to_world_trans) + translation)
+            utm_to_camera_trans = -np.dot(
+                utm_to_camera_rot,
+                scale * np.dot(rotation, camera_to_world_trans) + translation,
+            )
             # print(scale * np.dot(rotation, camera_to_world_trans) + translation)
             new_images[image_id] = Image(
-                id=image.id, qvec=rotmat2qvec(utm_to_camera_rot), tvec=utm_to_camera_trans.reshape(3),
-                camera_id=image.camera_id, name=image.name,
-                xys=image.xys, point3D_ids=image.point3D_ids)
+                id=image.id,
+                qvec=rotmat2qvec(utm_to_camera_rot),
+                tvec=utm_to_camera_trans.reshape(3),
+                camera_id=image.camera_id,
+                name=image.name,
+                xys=image.xys,
+                point3D_ids=image.point3D_ids,
+            )
 
         new_points3D = {}
         for point3D_id in points3D:

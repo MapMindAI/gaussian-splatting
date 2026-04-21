@@ -8,19 +8,23 @@ import json
 from typing import Any, Dict, List
 
 
-MODELS_FOLDER="/mnt/data/yeliu/models/segment_anything"
+MODELS_FOLDER = "/mnt/data/yeliu/models/segment_anything"
+
+
 # pip install git+https://github.com/facebookresearch/segment-anything.git@dca509fe793f601edb92606367a655c15ac00fdf
 # wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 # wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth
 # wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
-def prepare_models(model_names = ["sam_vit_h_4b8939", "sam_vit_l_0b3195", "sam_vit_b_01ec64"]):
+def prepare_models(model_names=["sam_vit_h_4b8939", "sam_vit_l_0b3195", "sam_vit_b_01ec64"]):
     print("====================== PREPARE MODELS ======================")
     for model_name in model_names:
         model_path = MODELS_FOLDER + "/" + model_name + ".pth"
         if os.path.isfile(model_path):
             print("Found " + model_name)
         else:
-            os.system("wget -O " + model_path + " https://dl.fbaipublicfiles.com/segment_anything/" + model_name + ".pth")
+            os.system(
+                "wget -O " + model_path + " https://dl.fbaipublicfiles.com/segment_anything/" + model_name + ".pth"
+            )
 
 
 def write_masks_to_folder(masks: List[Dict[str, Any]], path: str) -> None:
@@ -57,7 +61,7 @@ def write_opencv_mask_image(masks: List[Dict[str, Any]], path: str) -> None:
         else:
             mask_full += mask * i
     cv2.imwrite(path + ".png", mask_full)
-    
+
 
 """
 SESSION=wuxi_20241114
@@ -69,7 +73,7 @@ python dm/segment/segment_anything.py \
 if __name__ == "__main__":
     prepare_models()
     output_mode = "binary_mask"
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input",
@@ -93,24 +97,22 @@ if __name__ == "__main__":
         help="The type of model to load, in ['default', 'vit_h', 'vit_l', 'vit_b']",
     )
     args = parser.parse_args(sys.argv[1:])
-    
+
     checkpoint_path = MODELS_FOLDER + "/sam_vit_b_01ec64.pth"
     if args.model_type.find("vit_h") != -1:
         checkpoint_path = MODELS_FOLDER + "/sam_vit_h_4b8939.pth"
     elif args.model_type.find("vit_l") != -1:
         checkpoint_path = MODELS_FOLDER + "/sam_vit_l_0b3195.pth"
-    
+
     print("load " + checkpoint_path)
     sam = sam_model_registry[args.model_type](checkpoint=checkpoint_path)
     _ = sam.to(device="cuda")
     generator = SamAutomaticMaskGenerator(sam, output_mode=output_mode)
-    
+
     if not os.path.isdir(args.input):
         targets = [args.input]
     else:
-        targets = [
-            f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))
-        ]
+        targets = [f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))]
         targets = [os.path.join(args.input, f) for f in targets]
     print("load " + str(len(targets)) + " images")
     os.makedirs(args.output, exist_ok=True)
@@ -128,7 +130,7 @@ if __name__ == "__main__":
         base = os.path.basename(t)
         base = os.path.splitext(base)[0]
         save_base = os.path.join(args.output, base)
-        #os.makedirs(save_base, exist_ok=False)
-        #write_masks_to_folder(masks, save_base)
+        # os.makedirs(save_base, exist_ok=False)
+        # write_masks_to_folder(masks, save_base)
         write_opencv_mask_image(masks, save_base)
     print("Done!")

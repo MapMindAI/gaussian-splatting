@@ -11,6 +11,8 @@ SESSION=$2
 echo "WORK DIR is :"
 echo ${MAP_FOLDER}/${SESSION}
 
+export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
 echo "====================== PROCESS VIDEOS ======================"
 python mapmind/colmap/drone_image_extractor.py --input_video ${MAP_FOLDER}/${SESSION} --image_interval_sec 1
 

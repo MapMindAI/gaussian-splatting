@@ -26,9 +26,7 @@ class BowRetireval:
     def __init__(self, model_path, top_k=5):
         self.top_k = top_k
         self.kmeans = joblib.load(os.path.join(model_path, RETRIEVAL_BOW_KMEANS_PATH))
-        self.image_ids = np.load(
-            os.path.join(model_path, RETRIEVAL_BOW_IDS_PATH), allow_pickle=True
-        )
+        self.image_ids = np.load(os.path.join(model_path, RETRIEVAL_BOW_IDS_PATH), allow_pickle=True)
 
         image_bow_vectors = np.load(os.path.join(model_path, RETRIEVAL_BOW_VECTORS_PATH))
         self.index = faiss.IndexFlatL2(image_bow_vectors.shape[1])
@@ -83,9 +81,7 @@ if __name__ == "__main__":
     print(" - ", all_descriptors.shape)
 
     print("Make Index")
-    kmeans = MiniBatchKMeans(
-        n_clusters=RETRIEVAL_BOW_NUM_CLUSTERS, batch_size=10000, verbose=1, n_init=3
-    )
+    kmeans = MiniBatchKMeans(n_clusters=RETRIEVAL_BOW_NUM_CLUSTERS, batch_size=10000, verbose=1, n_init=3)
     kmeans.fit(all_descriptors)
     joblib.dump(kmeans, os.path.join(args.model_path, RETRIEVAL_BOW_KMEANS_PATH))
 

@@ -12,7 +12,8 @@ from ultralytics.engine.results import Masks
 # https://github.com/ultralytics/ultralytics
 # pip install ultralytics
 
-MODELS_PATH="/mnt/data/yeliu/models/yolo11n-seg.pt"
+MODELS_PATH = "/mnt/data/yeliu/models/yolo11n-seg.pt"
+
 
 # https://github.com/ultralytics/ultralytics/issues/14357
 def write_opencv_mask_image(results, path: str) -> None:
@@ -32,10 +33,10 @@ def write_opencv_mask_image(results, path: str) -> None:
         #         mask_full = (mask_tmp * i).astype('uint8')
         #     else:
         #         mask_full += (mask_tmp * i).astype('uint8')
-    
+
     # cv2.imwrite(path + ".png", mask_full)
-    
-    
+
+
 """
 SESSION=wuxi_20241114
 python dm/segment/segment_yolo.py \
@@ -60,28 +61,25 @@ if __name__ == "__main__":
         ),
     )
     args = parser.parse_args(sys.argv[1:])
-    
 
     # Load a model
     model = YOLO(MODELS_PATH)  # load a pretrained model (recommended for training)
     model.to(device="cuda")
-    
+
     if not os.path.isdir(args.input):
         targets = [args.input]
     else:
-        targets = [
-            f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))
-        ]
+        targets = [f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))]
         targets = [os.path.join(args.input, f) for f in targets]
     print("load " + str(len(targets)) + " images")
     os.makedirs(args.output, exist_ok=True)
 
     for t in targets:
         print(f"Processing '{t}'...")
-        
+
         # masks = generator.generate(image)
         results = model(t)  # predict on an image
-        
+
         base = os.path.basename(t)
         base = os.path.splitext(base)[0]
         save_base = os.path.join(args.output, base)

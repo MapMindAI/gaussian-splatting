@@ -11,15 +11,21 @@ from tqdm import tqdm
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train segmentation network')
-    parser.add_argument('--process_interval', help='frame process interval', default=60, type=int)
-    parser.add_argument('--create_subfoler', help='create subfoler', default=1, type=int)
-    parser.add_argument('--input_video', help='input video path', type=str)
-    parser.add_argument('--ignore_prefix', help='video filter header, split with ,', default="", type=str)
-    parser.add_argument('--images', help='output folder', default="images", type=str)
+    parser = argparse.ArgumentParser(description="Train segmentation network")
+    parser.add_argument("--process_interval", help="frame process interval", default=60, type=int)
+    parser.add_argument("--create_subfoler", help="create subfoler", default=1, type=int)
+    parser.add_argument("--input_video", help="input video path", type=str)
+    parser.add_argument(
+        "--ignore_prefix",
+        help="video filter header, split with ,",
+        default="",
+        type=str,
+    )
+    parser.add_argument("--images", help="output folder", default="images", type=str)
     args = parser.parse_args()
 
     return args
+
 
 def find_mp4_files(input_dir, ignore_prefix):
     if not os.path.isdir(input_dir):
@@ -29,12 +35,12 @@ def find_mp4_files(input_dir, ignore_prefix):
     all_mp4_files += glob.glob(os.path.join(input_dir, "*.mp4"))
 
     if len(ignore_prefix) > 0:
-        ignore_header = ignore_prefix.split(',')
+        ignore_header = ignore_prefix.split(",")
         filtered_mp4_files = []
         for file in all_mp4_files:
             valid = True
             for header in ignore_header:
-                if os.path.basename(file).startswith(ignore_header):
+                if os.path.basename(file).startswith(header):
                     valid = False
             if not valid:
                 continue
@@ -50,7 +56,7 @@ def read_video_frames(process_interval, video_path, save_folder, create_subfoler
         print("cannot open video", video_path)
         return
 
-    video_width  = int(cap.get(3))
+    video_width = int(cap.get(3))
     video_height = int(cap.get(4))
     frame_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -81,12 +87,12 @@ def read_video_frames(process_interval, video_path, save_folder, create_subfoler
             break
 
         frame_count += 1
-        if frame_count%process_interval != 1:
+        if frame_count % process_interval != 1:
             continue
 
         if frame_count == 1:
             progress_bar.update(1)
-        else :
+        else:
             progress_bar.update(process_interval)
 
         image_path = video_base_path + "{:05d}".format(frame_count) + ".jpg"
@@ -109,14 +115,14 @@ if __name__ == "__main__":
     os.makedirs(save_folder, exist_ok=True)
 
     if len(filtered_mp4_files) == 0:
-      print("No video found")
-      os.makedirs(os.path.join(save_folder, "no_ordinary_video"), exist_ok=True)
-      exit(0)
+        print("No video found")
+        os.makedirs(os.path.join(save_folder, "no_ordinary_video"), exist_ok=True)
+        exit(0)
 
     # create a file to tell that ordinary video exist, to let colmap choose opencv camera model
     os.makedirs(os.path.join(save_folder, "use_opencv_model"), exist_ok=True)
 
     for video in filtered_mp4_files:
-      print("process", video)
-      read_video_frames(args.process_interval, video, save_folder, args.create_subfoler)
+        print("process", video)
+        read_video_frames(args.process_interval, video, save_folder, args.create_subfoler)
     print("Done")

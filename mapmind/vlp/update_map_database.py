@@ -10,6 +10,7 @@ import torch
 from tqdm import tqdm
 
 import sys
+
 sys.path.append("scene")
 sys.path.append("submodules")
 from colmap_loader import *
@@ -18,10 +19,9 @@ from scipy.spatial.transform import Rotation as R
 from typing import Dict, List, Tuple, Optional
 from LightGlue.lightglue import SuperPoint
 
+
 class COLMAPDatabase:
-    def __init__(
-        self, original_db_path: str, new_db_path: str = None
-    ):
+    def __init__(self, original_db_path: str, new_db_path: str = None):
         """
         Initialize COLMAP database connection
 
@@ -31,7 +31,7 @@ class COLMAPDatabase:
         """
         self.original_db_path = original_db_path
         self.new_db_path = new_db_path
-        self.reconstruction_path = original_db_path.replace('database.db', 'sparse/0/')
+        self.reconstruction_path = original_db_path.replace("database.db", "sparse/0/")
         self.max_image_width = 1080
 
         # Copy original database to new path
@@ -47,7 +47,7 @@ class COLMAPDatabase:
         self.cursor.execute("DROP TABLE IF EXISTS pose_priors")
         self.cursor.execute("DROP TABLE IF EXISTS two_view_geometries")
         self.conn.commit()
-        
+
         # Write image pose to the database
         self.update_image_table_with_poses()
 
@@ -66,16 +66,16 @@ class COLMAPDatabase:
 
         print(f"-----------Replacing original features with superpoint features-----------")
         # 1. Get superpoint and load all image_id
-        superpoint = SuperPoint(max_num_keypoints=4096).eval().to('cuda')
+        superpoint = SuperPoint(max_num_keypoints=4096).eval().to("cuda")
         image_ids = self.get_all_image_ids()
         success_count = 0
-        print(f'Get superpoint and load all image_id!')
+        print(f"Get superpoint and load all image_id!")
 
         # 2. Clear existing keypoints and descriptors
         self.cursor.execute("DELETE FROM keypoints")
         self.cursor.execute("DELETE FROM descriptors")
         self.conn.commit()
-        print(f'Clear existing keypoints and descriptors!')
+        print(f"Clear existing keypoints and descriptors!")
 
         # 3. Extract superpoint features in all images and update keypoints and descriptors table
         progress_bar = tqdm(range(0, len(image_ids)), desc="Extract Features")
@@ -94,9 +94,7 @@ class COLMAPDatabase:
                 print(f"[Warning] Image ID {image_id} not found, skipping...\n")
                 continue
             image_name = result[0]
-            image_path = os.path.join(
-                os.path.dirname(self.original_db_path), "images/" + image_name
-            )
+            image_path = os.path.join(os.path.dirname(self.original_db_path), "images/" + image_name)
             image = cv2.imread(image_path)
             if image is None:
                 print(f"[Warning] Failed to load image {image_path}, skipping...\n")
@@ -105,22 +103,18 @@ class COLMAPDatabase:
             # 3.2 Run superpoint
             try:
                 # ktps, descps = superpoint.run(image)
-                image_gray = (
-                    cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                    if image.ndim == 3
-                    else image.copy()
-                )
+                image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image.copy()
                 if image_gray.shape[1] > self.max_image_width:
                     # resize the image, if image size too large
                     new_height = int(self.max_image_width * image_gray.shape[0] / image_gray.shape[1])
                     image_size = (self.max_image_width, new_height)
                     image_gray = cv2.resize(image_gray, image_size).astype(np.uint8)
-                image_tensor = torch.from_numpy(image_gray/255.).float()[None, None].to('cuda')
+                image_tensor = torch.from_numpy(image_gray / 255.0).float()[None, None].to("cuda")
                 image_size = (image_gray.shape[1], image_gray.shape[0])
 
-                pred0 = superpoint({'image': image_tensor})
-                old_ktps = pred0['keypoints'][0].detach().cpu().numpy()
-                descps = pred0['descriptors'][0].detach().cpu().numpy()
+                pred0 = superpoint({"image": image_tensor})
+                old_ktps = pred0["keypoints"][0].detach().cpu().numpy()
+                descps = pred0["descriptors"][0].detach().cpu().numpy()
 
                 ktps = []
                 factor_x = image.shape[1] / image_size[0]
@@ -132,7 +126,7 @@ class COLMAPDatabase:
                 # normalize descriptions
                 descps = 255.0 * (descps + 0.5)
                 descps = np.array([descps], dtype=np.uint8)
-                
+
                 # ktps, descps = ktps[0], descps[0]
             except Exception as e:
                 print(f"[Error] Superpoint failed on {image_name}: {e}, skipping...\n")
@@ -186,7 +180,7 @@ class COLMAPDatabase:
         """
 
         # Get valid image names from depth files
-        depth_root = self.original_db_path.replace('database.db', 'output/depth/')
+        depth_root = self.original_db_path.replace("database.db", "output/depth/")
         valid_image_names = set()
         for root, _, files in os.walk(depth_root):
             for f in files:
@@ -211,7 +205,7 @@ class COLMAPDatabase:
             print(f"Deleted {len(to_delete)} images not in images.txt")
         else:
             print("No extra images to delete")
-        
+
         # Get poses of images from COLMAP reconstruction
         images, cameras, _ = read_colmap_model(self.reconstruction_path)
         print(f" load sparse model : #images={len(images)}, #cameras={len(cameras)}")
@@ -222,13 +216,13 @@ class COLMAPDatabase:
             qvec = image.qvec
             tvec = image.tvec
             poses[image_id] = {
-                'qw': qvec[0],
-                'qx': qvec[1],
-                'qy': qvec[2],
-                'qz': qvec[3],
-                'tx': tvec[0],
-                'ty': tvec[1],
-                'tz': tvec[2],
+                "qw": qvec[0],
+                "qx": qvec[1],
+                "qy": qvec[2],
+                "qz": qvec[3],
+                "tx": tvec[0],
+                "ty": tvec[1],
+                "tz": tvec[2],
             }
 
         # TODO(yeliu): fix for all the cameras (there might be multiple cameras)
@@ -238,38 +232,38 @@ class COLMAPDatabase:
         camera_id = camera.id
         params = camera.params
         self.cursor.execute(
-            '''
+            """
         UPDATE cameras
         SET params = ?
         WHERE camera_id = ?
-    ''',
+    """,
             (params.tobytes(), camera_id),
         )
 
         # Update the images table with poses
-        new_columns = ['qw', 'qx', 'qy', 'qz', 'tx', 'ty', 'tz']
+        new_columns = ["qw", "qx", "qy", "qz", "tx", "ty", "tz"]
         for col in new_columns:
             try:
-                self.cursor.execute(f'ALTER TABLE images ADD COLUMN {col} REAL')
+                self.cursor.execute(f"ALTER TABLE images ADD COLUMN {col} REAL")
             except sqlite3.OperationalError:
                 # column exists, ignore
                 pass
 
         for image_id, pose in poses.items():
             self.cursor.execute(
-                '''
+                """
         UPDATE images
         SET qw = ?, qx = ?, qy = ?, qz = ?, tx = ?, ty = ?, tz = ?
         WHERE image_id = ?
-        ''',
+        """,
                 (
-                    pose['qw'],
-                    pose['qx'],
-                    pose['qy'],
-                    pose['qz'],
-                    pose['tx'],
-                    pose['ty'],
-                    pose['tz'],
+                    pose["qw"],
+                    pose["qx"],
+                    pose["qy"],
+                    pose["qz"],
+                    pose["tx"],
+                    pose["ty"],
+                    pose["tz"],
                     image_id,
                 ),
             )
@@ -295,7 +289,7 @@ class COLMAPDatabase:
             print("  Columns:")
             for column in columns:
                 print(f"    {column[1]}: {column[2]}")
-            print(40 * '-')
+            print(40 * "-")
 
     def get_database_path(self) -> str:
         """Get the path of the working database"""
@@ -311,7 +305,7 @@ class COLMAPDatabase:
             columns = [column[1] for column in self.cursor.fetchall()]
 
             # TODO(wenhao): Let the column name become a variable parameter
-            if 'coords_3d' not in columns:
+            if "coords_3d" not in columns:
                 # Add new column to store 3D coordinates (using BLOB to store numpy arrays)
                 self.cursor.execute(
                     """
@@ -324,7 +318,7 @@ class COLMAPDatabase:
                 print("coords_3d column already exists")
 
             # Add colors column if it doesn't exist
-            if 'colors' not in columns:
+            if "colors" not in columns:
                 self.cursor.execute(
                     """
           ALTER TABLE keypoints
@@ -455,7 +449,7 @@ class COLMAPDatabase:
           Encoded binary data
         """
         if coords_3d.size == 0:
-            return b''
+            return b""
 
         # Ensure float64 format and convert to bytes
         coords_3d = coords_3d.astype(np.float64)
@@ -520,9 +514,7 @@ class COLMAPDatabase:
         self.cursor.execute("SELECT DISTINCT image_id FROM keypoints")
         return [row[0] for row in self.cursor.fetchall()]
 
-    def get_keypoints_with_3d_coords(
-        self, image_id: int
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_keypoints_with_3d_coords(self, image_id: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Get keypoints and their 3D coordinates, and colors
 
@@ -578,12 +570,10 @@ class DepthTo3DConverter:
         self.min_depth_percentile = min_depth_percentile
         self.max_depth_percentile = max_depth_percentile
         self.max_depth = 100.0
-        
+
     def read_array(self, path):
         with open(path, "rb") as fid:
-            width, height, channels = np.genfromtxt(
-                fid, delimiter="&", max_rows=1, usecols=(0, 1, 2), dtype=int
-            )
+            width, height, channels = np.genfromtxt(fid, delimiter="&", max_rows=1, usecols=(0, 1, 2), dtype=int)
             fid.seek(0)
             num_delimiter = 0
             byte = fid.read(1)
@@ -613,9 +603,7 @@ class DepthTo3DConverter:
             try:
                 # TODO(wenhao): More suitable methods to remove outliers
                 depth_map = self.read_array(depth_file_path)
-                min_depth, max_depth = np.percentile(
-                    depth_map, [self.min_depth_percentile, self.max_depth_percentile]
-                )
+                min_depth, max_depth = np.percentile(depth_map, [self.min_depth_percentile, self.max_depth_percentile])
                 depth_map[depth_map < min_depth] = min_depth
                 depth_map[depth_map > max_depth] = max_depth
 
@@ -666,7 +654,6 @@ class DepthTo3DConverter:
 
             # Check if pixel is within depth map bounds
             if 0 <= px < depth_map.shape[1] and 0 <= py < depth_map.shape[0]:
-
                 # Get depth value, inverse depth is stored inside the depth map
                 depth_inv = depth_map[py, px]
 
@@ -728,7 +715,7 @@ class DepthTo3DConverter:
             return False
 
         # Load depth map
-        depth_map_name = image_name.replace('.jpg', '.depth')
+        depth_map_name = image_name.replace(".jpg", ".depth")
         depth_map = self.load_depth_map(depth_map_name)
 
         if depth_map is None:
@@ -740,16 +727,14 @@ class DepthTo3DConverter:
         R_cw = qvec2rotmat(quat)
         t_cw = np.array(trans).reshape(3, 1)
         R_wc = R_cw.T
-        C_w  = -R_cw.T @ t_cw
-        
+        C_w = -R_cw.T @ t_cw
+
         rotation_matrix = R_wc
         trans = C_w.flatten()
 
         # Convert 2D keypoints to 3D coordinates
         keypoints_2d = keypoints[:, :2]  # Extract x, y coordinates
-        coords_3d = self.pixel_to_3d(
-            keypoints_2d, depth_map, camera_params, camera_model, rotation_matrix, trans
-        )
+        coords_3d = self.pixel_to_3d(keypoints_2d, depth_map, camera_params, camera_model, rotation_matrix, trans)
 
         # Update database
         db_tool.update_keypoints_3d_coords(image_id, coords_3d)
@@ -761,7 +746,7 @@ class DepthTo3DConverter:
         return True
 
     def create_ply_file(self, db_tool: COLMAPDatabase, file_name: str):
-        '''Add all 3d points from images together and create a .ply file'''
+        """Add all 3d points from images together and create a .ply file"""
         point_cloud = open3d.geometry.PointCloud()
         all_points = []
         all_colors = []
@@ -769,7 +754,7 @@ class DepthTo3DConverter:
 
         image_ids = db_tool.get_all_image_ids()
         progress_bar = tqdm(range(0, len(image_ids)), desc="Merge Pcl")
-        
+
         for image_id in image_ids:
             _, point3D, colors = db_tool.get_keypoints_with_3d_coords(image_id)
 
@@ -812,20 +797,24 @@ class DepthTo3DConverter:
 
 def main():
     """Main function"""
-    parser = argparse.ArgumentParser(
-        description='Add 3D coordinates to COLMAP keypoints using depth maps'
-    )
+    parser = argparse.ArgumentParser(description="Add 3D coordinates to COLMAP keypoints using depth maps")
     parser.add_argument(
-        '--map_dir',
+        "--map_dir",
         type=str,
-        default='/mnt/ml-experiment-data/yeliu/gaussian_splatting/GoPro/NanshaOffice2',
-        help='Directory containing COLMAP reconstruction (with database.db)',
+        default="/mnt/ml-experiment-data/yeliu/gaussian_splatting/GoPro/NanshaOffice2",
+        help="Directory containing COLMAP reconstruction (with database.db)",
     )
     parser.add_argument(
-        '--new_db_name', type=str, default='database_3d.db', help='Name for the new database file'
+        "--new_db_name",
+        type=str,
+        default="database_3d.db",
+        help="Name for the new database file",
     )
     parser.add_argument(
-        '--depth_path', type=str, default='output/depth', help='Directory containing depth maps'
+        "--depth_path",
+        type=str,
+        default="output/depth",
+        help="Directory containing depth maps",
     )
     parser.add_argument(
         "--min_depth_percentile",
@@ -849,7 +838,7 @@ def main():
     args = parser.parse_args()
 
     # Construct paths
-    original_db_path = os.path.join(args.map_dir, 'database.db')
+    original_db_path = os.path.join(args.map_dir, "database.db")
     new_db_path = os.path.join(args.map_dir, args.new_db_name)
     depth_path = os.path.join(args.map_dir, args.depth_path)
     min_depth_percentile = args.min_depth_percentile
@@ -883,7 +872,7 @@ def main():
         image_ids = db_tool.get_all_image_ids()
         print(f"Found {len(image_ids)} images to process")
         progress_bar = tqdm(range(0, len(image_ids)), desc="Load Point3d")
-        
+
         successful_count = 0
         for image_id in image_ids:
             # print(f"\nProcessing image ID: {image_id}")
@@ -899,7 +888,7 @@ def main():
         print(f"New database saved as: {new_db_path}")
 
         # Create point cloud
-        ply_file_name = os.path.join(args.map_dir, 'output/point_cloud_from_depth.ply')
+        ply_file_name = os.path.join(args.map_dir, "output/point_cloud_from_depth.ply")
         depth_converter.create_ply_file(db_tool, ply_file_name)
 
     except Exception as e:
