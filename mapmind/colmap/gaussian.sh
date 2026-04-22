@@ -16,29 +16,40 @@ if [ $# -ge 3 ]; then
     fi
 fi
 
-# enable Exposure compensation
-EXPOSURE_GS_ARG="--exposure_lr_init 0.001 --exposure_lr_final 0.0001 --exposure_lr_delay_steps 5000 --exposure_lr_delay_mult 0.001 --train_test_exp "
-DENSIFY_GS_ARG="--densify_grad_threshold 0.00008 --percent_dense 0.015"
-LR_GS_ARG="--position_lr_init 0.000016 --scaling_lr 0.001"
-
-DAY_NIGHT_SCENE_LINE="--white_background"
-# add night to name if collect in night
-variable="night"
-if echo "$SESSION" | grep -q "$variable"; then
-    echo "====================== PROCESS NIGHT ======================"
-    echo "The session is in night, where the L1 loss will be small, since the scene is dark. so we increase lambda_dssim."
-    DAY_NIGHT_SCENE_LINE="--lambda_dssim 0.5"
-    # decrease the threshold, since night scene has less texture
-    DENSIFY_GS_ARG="--densify_grad_threshold 0.00005 --percent_dense 0.015"
-fi
-
 TEST_PATH=${MAP_FOLDER}/${SESSION}/images/use_opencv_model/
+TEST_PATH_GPS=${MAP_FOLDER}/${SESSION}/images/image_with_gps/
+
 IF_USE_DENSE=""
 if [ -d "$TEST_PATH" ]; then
+  # use opencv camera model, we need to use the undistorted image in dense folder
   IF_USE_DENSE="/dense"
 fi
 
-echo "Process session : " ${SESSION} ${IF_USE_DENSE}
+
+# enable Exposure compensation
+EXPOSURE_GS_ARG="--exposure_lr_init 0.001 --exposure_lr_final 0.0001 --exposure_lr_delay_steps 5000 --exposure_lr_delay_mult 0.001 --train_test_exp "
+DENSIFY_GS_ARG="--densify_grad_threshold 0.0002 --percent_dense 0.01"
+LR_GS_ARG="--position_lr_init 0.00016 --scaling_lr 0.005"
+DAY_NIGHT_SCENE_LINE="--white_background"
+
+if [ -d "$TEST_PATH_GPS" ]; then
+    echo "GPS data is available, in the outdoor scene, adjust the parameters"
+
+    DENSIFY_GS_ARG="--densify_grad_threshold 0.00008 --percent_dense 0.015"
+    LR_GS_ARG="--position_lr_init 0.000016 --scaling_lr 0.001"
+
+    # add night to name if collect in night
+    variable="night"
+    if echo "$SESSION" | grep -q "$variable"; then
+        echo "====================== PROCESS NIGHT ======================"
+        echo "The session is in night, where the L1 loss will be small, since the scene is dark. so we increase lambda_dssim."
+        DAY_NIGHT_SCENE_LINE="--lambda_dssim 0.5"
+        # decrease the threshold, since night scene has less texture
+        DENSIFY_GS_ARG="--densify_grad_threshold 0.00005 --percent_dense 0.015"
+    fi
+fi
+
+echo "======== Process session : " ${SESSION} ${IF_USE_DENSE} "========"
 
 export PYTHONPATH="$PYTHONPATH:submodules/libs"
 OUTPUT_FOLDER=output

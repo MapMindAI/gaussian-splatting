@@ -18,12 +18,13 @@ def parse_args():
     parser.add_argument("--process_interval", help="frame process interval", default=60, type=int)
     parser.add_argument("--jump_jump", help="jump some of the frames", default=0, type=int)
     parser.add_argument("--input_video", help="input 360 video path", type=str)
+    parser.add_argument("--resize_factor", help="resize factor of the output images", default=1.0, type=float)
     args = parser.parse_args()
 
     return args
 
 
-def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_folder):
+def read_video_frames(num_divide, process_interval, jump_jump, resize_factor, video_path, save_folder):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -40,7 +41,7 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
         return -1
 
     # compute a proper resolution for the output image
-    image_width = int(video_width / num_divide)
+    image_width = int(video_width * resize_factor/ num_divide)
     image_height = int(image_width * 0.8)
     output_resolu = (image_width, image_height)
     output_focal = (50 * num_divide) * image_width / 640
@@ -164,6 +165,7 @@ if __name__ == "__main__":
             args.num_divide,
             args.process_interval,
             args.jump_jump,
+            args.resize_factor,
             video_path,
             save_folder,
         )

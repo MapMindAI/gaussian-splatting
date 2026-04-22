@@ -70,12 +70,13 @@ pip install submodules/fused-ssim
 1. **Capture the videos**. Record 360 videos using either GoPro Max or Insta360.
   * GoPro Max has built-in GPS.
   * Insta360 requires **connection to a phone** to include GPS, since GPS is obtained from the phone.
+  * **The insta360 panorama has some stitching artifacts, we strongly recommend you to use GoPro if possible.**
 2. **Prepare the panorama files**
 
 | GoPro Max|  Insta360 |
 |------------|--------|
 | Use the official GoPro application to stitch the raw video into a standard panorama video. <br>For each capture, keep both: <br>* the raw .360 file; <br>* the stitched .mp4 panorama video; <br>Both files should be uploaded into the dataset folder. | Copy the raw .insv file directly from the SD card. <br>No manual stitching is required. <u>High-quality stitching is included in our Docker pipeline.</u> |
-| [example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link)<br> [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176) |  |
+| [example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link)<br> [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176) | not ready |
 
 <details>
 <summary>Insta360 stitch with Linux SDK</summary>
