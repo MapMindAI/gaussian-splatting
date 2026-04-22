@@ -9,9 +9,11 @@ EasyGaussianSplatting provides an end-to-end, production-oriented pipeline for G
 
 The repository is designed to bridge the gap between research prototypes and real-world applications by integrating:
 
-- Docker-based environment for reproducibility
-- Automated scripts for the full reconstruction workflow
-- One-command execution from input data to final rendering
+- 🎉 **One-command execution from input data to final rendering**
+  * Docker-based environment for reproducibility
+  * Automated scripts for the full reconstruction workflow
+- 🎉 **Optimized GPU memory usage, could train large model in normal GPU**
+  * I have done all my tests with GTX 1650 Ti 4G.
 
 In addition to the standard pipeline, this project includes **geo-referencing capabilities**:
 - Native support for DJI and GoPro datasets with GPS metadata
