@@ -10,3 +10,4 @@ screenshots
 *__pycache__
 data
 *bash_history
+artifacts/docker/installers/libMediaSDK-dev.deb
