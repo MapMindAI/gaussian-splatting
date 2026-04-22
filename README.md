@@ -12,7 +12,7 @@ The repository is designed to bridge the gap between research prototypes and rea
 - 🎉 **One-command execution from input data to final rendering**
   * Docker-based environment for reproducibility
   * Automated scripts for the full reconstruction workflow
-- 🎉 **Optimized GPU memory usage, could train large model in normal GPU**
+- 🎉 **Optimized GPU memory usage, could train large model on consumer-grade GPUs**
   * I have done all my tests with GTX 1650 Ti 4G.
 
 In addition to the standard pipeline, this project includes **geo-referencing capabilities**:
@@ -20,9 +20,6 @@ In addition to the standard pipeline, this project includes **geo-referencing ca
 - Transformation from geographic coordinates to UTM space
 - Recovery of metric scale using GPS information
 - Integration of geo-aligned reconstruction into the pipeline
-
-We further **optimize the memory footprint** of Gaussian Splatting,
-**significantly reducing GPU usage** and enabling large-scale scene training on consumer-grade GPUs.
 
 These features enable users to obtain not only visually accurate reconstructions, but also **spatially consistent, scale-aware, and scalable 3D scenes**.
 
