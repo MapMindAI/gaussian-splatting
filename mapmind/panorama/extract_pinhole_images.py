@@ -122,7 +122,7 @@ def process_insta360_videos(input_video_path):
                 -inputs {pano_raw_video} -output {output_mp4_path} \
                 -stitch_type optflow -enable_stitchfusion \
                 -output_size 8000x4000 -bitrate 150000000 \
-                -enable_h265_encoder -enable_flowstate
+                -enable_h265_encoder -enable_flowstate -enable_directionlock
                 """
                 print("  - run command line : " + command_line)
                 os.system(command_line)
@@ -182,8 +182,9 @@ if __name__ == "__main__":
         elif os.path.isfile(output_meta_file):
             # this is insta360 file
             gps_list = insta360_meta_extractor.read_gps_from_meta(output_meta_file)
-            insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
             has_gps = len(gps_list) > 0
+            if has_gps:
+                insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
 
     # create a file to tell that image gps exist
     if has_gps:

@@ -105,6 +105,7 @@ colmap view_graph_calibrator \
   --database_path ${MAP_FOLDER}/${SESSION}/database_global.db
 
 mkdir -p ${MAP_FOLDER}/${SESSION}/sparse_raw
+mkdir -p ${MAP_FOLDER}/${SESSION}/sparse/0
 
 colmap global_mapper \
   --database_path ${MAP_FOLDER}/${SESSION}/database_global.db \
