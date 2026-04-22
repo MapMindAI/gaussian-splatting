@@ -13,6 +13,8 @@ dependencies:
   - torchvision=0.13.1
   - tqdm
   - jupyter
+  - mkl=2024.0.0
+  - intel-openmp<2024.1
   - pip:
     - opencv-python
     - joblib

@@ -63,7 +63,7 @@ pip install submodules/fused-ssim
 
 * 👑 use https://playcanvas.com/supersplat/editor
 * 👍 using the threejs version from https://discourse.threejs.org/t/3d-gaussian-splatting-in-three-js/57858 in https://projects.markkellogg.org/threejs/demo_gaussian_splats_3d.php
-
+* [A webtool](https://yeliu-deepmirror.github.io/Tools/colmap_viewer.html) could be used to visualize colmap result.
 
 ## 3. Run With Drone Data
 
@@ -117,7 +117,7 @@ Raw Insta360 videos need to be processed with phone, and lack of parameters. Her
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 INPUT_INSV=data/insta360_test/VID_20260417_141937_00_001.insv
-OUPUT_VIDEO=data/insta360_test/VID_20260417_141937_00_001.mp4
+OUPUT_VIDEO=data/insta360_test/VID_20260417_141937_00_001_test.mp4
 
 insta360_media_stitcher \
 -inputs ${INPUT_INSV} \
@@ -155,3 +155,5 @@ After the building step finished, we will have the following results in the fold
 
 * You could refer to the [raw repo readme](README_gaussian_splatting.md), and the build script "mapmind/colmap/gaussian.sh" to adjust your parameters.
 * You can move to "run_xxx.sh" to adjust parameter for videos.
+
+# [FAQ](FAQ.md)

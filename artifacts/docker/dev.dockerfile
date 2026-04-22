@@ -40,7 +40,7 @@ RUN apt-get update && \
 # installl insta360_sdk
 COPY installers/insta360_sdk.sh /tmp/installers/
 COPY installers/insta_360_main.cc /tmp/installers/
-COPY installers/libMediaSDK-dev.deb /tmp/installers/
+# COPY installers/libMediaSDK-dev.deb /tmp/installers/
 RUN bash /tmp/installers/insta360_sdk.sh && rm /tmp/installers/insta360_sdk.sh
 
 # installl install_exiftools

@@ -30,7 +30,7 @@ def blob_to_array(blob, dtype, shape=(-1,)):
     return np.frombuffer(blob, dtype=dtype).reshape(*shape)
 
 
-# https://github.com/colmap/colmap/blob/6556b4e28fba070e15894833b31f66de6cf4c6e1/scripts/python/database.py#L144
+# https://github.com/colmap/colmap/blob/5e5484614ad3c9d93f4313c57c72f7eb1f3cd612/src/colmap/scene/database_sqlite.cc#L812
 def read_images_gps_prior(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -47,7 +47,7 @@ def read_images_gps_prior(db_path):
     pose_priors = cursor.fetchall()
     for pose_prior in pose_priors:
         # img_id, pos, _, _ = pose_prior
-        image_gpses[pose_prior[0]] = blob_to_array(pose_prior[1], np.float64, (3, 1))
+        image_gpses[pose_prior[0]] = blob_to_array(pose_prior[4], np.float64, (3, 1))
 
     conn.close()
     return image_gpses
@@ -181,15 +181,10 @@ def log_print(f_log, *args, **kwargs):
 
 
 """
-python dm/colmap/transform_colmap_model.py \
---database_path /mnt/data/yeliu/gaussian_splatting/DJI_test/database.db \
---model_path /mnt/data/yeliu/gaussian_splatting/DJI_test/sparse_raw/0 \
---output_model_path /mnt/data/yeliu/gaussian_splatting/DJI_test/sparse/0
-
-python dm/colmap/transform_colmap_model.py \
---database_path data/SYU/database.db \
---model_path data/SYU/sparse_raw/0 \
---output_model_path data/SYU/sparse_gps/0
+python mapmind/colmap/transform_colmap_model.py \
+--database_path data/insta360_test/database.db \
+--model_path data/insta360_test/sparse_raw/0 \
+--output_model_path data/insta360_test/sparse_gps/0
 """
 if __name__ == "__main__":
     args = parse_args()

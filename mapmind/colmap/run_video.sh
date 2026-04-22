@@ -27,17 +27,6 @@ if [ -d "$TEST_PATH" ]; then
     CAMERA_MODEL=OPENCV
 fi
 
-
-MASK_DIR=${MAP_FOLDER}/${SESSION}/masks
-GENERATE_MASKS=0
-if [ "${GENERATE_MASKS}" -eq 1 ]; then
-    echo "=== Generating QR masks into ${MASK_DIR} ==="
-    python mapmind/colmap/qrcode/generate_qr_mask.py \
-        --image_dir ${MAP_FOLDER}/${SESSION}/images \
-        --mask_dir ${MASK_DIR} \
-        --detect_model_path mapmind/colmap/qrcode/model/best-yolov8.pt
-fi
-
 echo "====================== PROCESS FEATURE EXTRACTION " ${CAMERA_MODEL}" ======================"
 
 TEST_PATH_VIDEO=${MAP_FOLDER}/${SESSION}/images/no_ordinary_video/
@@ -51,10 +40,8 @@ colmap feature_extractor ${SHARE_CAMERA} \
 --database_path ${MAP_FOLDER}/${SESSION}/database.db \
 --image_path ${MAP_FOLDER}/${SESSION}/images \
 --ImageReader.camera_model=${CAMERA_MODEL} \
---ImageReader.mask_path ${MASK_DIR} \
---FeatureExtraction.type ALIKED_N16ROT \
+--FeatureExtraction.type SIFT \
 --AlikedExtraction.max_num_features 2048
-
 
 echo "====================== PROCESS VIDEO MATCHER ======================"
 
@@ -73,18 +60,16 @@ if [ -d "$TEST_PATH_GPS" ]; then
     --SpatialMatching.max_num_neighbors 50 \
     --SpatialMatching.max_distance 40 \
     --SpatialMatching.ignore_z 1 \
-    --FeatureMatching.type ALIKED_LIGHTGLUE \
-    --AlikedMatching.min_cossim 0.85
+    --FeatureMatching.type SIFT_BRUTEFORCE
 fi
 if ((${NUM_IMAGES} < 500)); then
     echo "====================== exhaustive_matcher ======================"
     colmap exhaustive_matcher \
     --database_path ${MAP_FOLDER}/${SESSION}/database.db \
-    --FeatureMatching.type ALIKED_LIGHTGLUE \
-    --AlikedMatching.min_cossim 0.85
+    --FeatureMatching.type SIFT_BRUTEFORCE
 else
-    COLMAP_VOC_PATH_32=vocab_tree_flickr100K_words32K.bin
-    COLMAP_VOC_PATH_256=vocab_tree_flickr100K_words256K.bin
+    COLMAP_VOC_PATH_32=vocab_tree_flickr100K_words32K_faiss.bin
+    COLMAP_VOC_PATH_256=vocab_tree_flickr100K_words256K_faiss.bin
     VOC_NAME=${COLMAP_VOC_PATH_32}
     if ((${NUM_IMAGES} > 1500)); then
         VOC_NAME=${COLMAP_VOC_PATH_256}
@@ -108,8 +93,7 @@ else
     --SequentialMatching.loop_detection 1 \
     --SequentialMatching.loop_detection_num_images 50 \
     --SequentialMatching.loop_detection_num_nearest_neighbors 20 \
-    --FeatureMatching.type ALIKED_LIGHTGLUE \
-    --AlikedMatching.min_cossim 0.85
+    --FeatureMatching.type SIFT_BRUTEFORCE
 fi
 
 echo "====================== PROCESS GLOMAP MAPPER ======================"
@@ -134,23 +118,7 @@ python mapmind/colmap/rotate_colmap_to_UE.py \
 --input_sparse_path sparse_raw/0/ \
 --output_sparse_path sparse_raw/0/
 
-mkdir -p ${MAP_FOLDER}/${SESSION}/sparse/0
-if [ -f "${MAP_FOLDER}/${SESSION}/qr_poses.json"]; then
-  echo "Find prior qr_poses.json, set USE_QRCODE_PRIOR = 1"
-  USE_QRCODE_PRIOR=1
-fi
-
-if [ "${USE_QRCODE_PRIOR}" == "1" ]; then
-  echo "====================== USE QR-CODE PRIOR TRANSFORM ======================"
-  python mapmind/colmap/qrcode/transform_colmap_model_qrcode.py \
-  --colmap_model_dir ${MAP_FOLDER}/${SESSION} \
-  --image_dir images \
-  --qr_json_file mapmind/colmap/qrcode/qr.json \
-  --prior_qr_poses_json_file qr_poses_prior.json \
-  --output_dir ${MAP_FOLDER}/${SESSION}/output \
-  --input_sparse_path sparse_raw/0/ \
-  --output_sparse_path sparse/0/
-elif [ -d "$TEST_PATH_GPS" ]; then
+if [ -d "$TEST_PATH_GPS" ]; then
   echo "====================== USE GPS TRANSFORM ======================"
   python mapmind/colmap/transform_colmap_model.py \
   --database_path ${MAP_FOLDER}/${SESSION}/database.db \
