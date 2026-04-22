@@ -3,8 +3,11 @@ set -e
 
 
 MODEL_DIR=$(pwd)
+SESSION=$2
+MAP_FOLDER=$1
 
-docker run -d --rm --name 'EasyGaussianSplatting' \
+
+docker run --rm --name 'EasyGaussianSplatting' \
 --gpus 'all,"capabilities=compute,utility,graphics,video"' \
 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video \
 -e NVIDIA_VISIBLE_DEVICES=all \
@@ -13,6 +16,6 @@ docker run -d --rm --name 'EasyGaussianSplatting' \
 colmap_gaussian_splatting \
 bash -c "
 cd /EasyGaussianSplatting
-conda run -n gaussian_splatting ./mapmind/run_360.sh /EasyGaussianSplatting/data insta360_test
-chmod -R 777 /EasyGaussianSplatting/data/insta360_test
+conda run --no-capture-output -n gaussian_splatting ./mapmind/run_drone.sh ${MAP_FOLDER} ${SESSION}
+chmod -R 777 ${MAP_FOLDER}/${SESSION}
 "

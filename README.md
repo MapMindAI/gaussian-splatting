@@ -46,7 +46,7 @@ docker run -it --rm -v $(pwd):/workspace ghcr.io/mapmindai/gaussiansplatting:lat
 Please refer to the docker file "artifacts/docker/dev.dockerfile" to build the environment.
 
 ```
-docker build -f artifacts/docker/dev.dockerfile -t colmap_gaussian_splatting artifacts/docker/
+docker build -f artifacts/docker/dev.dockerfile -t cuda_dev artifacts/docker/
 ```
 
 In the repo we have rebuilt libs for docker env, if you don't use docker, you might need to build these libs:
@@ -70,7 +70,6 @@ pip install submodules/fused-ssim
 1. **Capture the videos**. Record 360 videos using either GoPro Max or Insta360.
   * GoPro Max has built-in GPS.
   * Insta360 requires **connection to a phone** to include GPS, since GPS is obtained from the phone.
-  * **The insta360 panorama has some stitching artifacts, we strongly recommend you to use GoPro if possible.**
 2. **Prepare the panorama files**
 
 | GoPro Max|  Insta360 |
@@ -87,8 +86,8 @@ Raw Insta360 videos need to be processed with phone, and lack of parameters. Her
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-INPUT_INSV=data/insta360_test/VID_20260417_141937_00_001.insv
-OUPUT_VIDEO=data/insta360_test/VID_20260417_141937_00_001_test.mp4
+INPUT_INSV=data/insta360_test/VID_20260422_153814_00_004.insv
+OUPUT_VIDEO=data/insta360_test/VID_20260422_153814_00_004_test.mp4
 
 insta360_media_stitcher \
 -inputs ${INPUT_INSV} \
@@ -96,7 +95,7 @@ insta360_media_stitcher \
 -model_root_dir /EasyGaussianSplatting/data/sdk_dir \
 -stitch_type aistitch -enable_stitchfusion \
 -output_size 8000x4000 -bitrate 150000000 \
--enable_h265_encoder -enable_flowstate -enable_colorplus
+-enable_h265_encoder -enable_flowstate -enable_directionlock
 ```
 
 Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/panorama/insta360_meta_extractor.py" to see more details, about how we extract these data.
@@ -107,7 +106,7 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 3. **Run the reconstruction pipeline**:
 
 ```
-./mapmind/run_360.sh MAP_FOLDER SESSION_NAME
+./mapmind/docker_run_360.sh MAP_FOLDER SESSION_NAME
 ```
 
 4. The script will automatically:
@@ -137,7 +136,7 @@ After the building step finished, we will have the following results in the fold
 3. **Run the reconstruction pipeline**:
 
 ```
-./mapmind/run_drone.sh MAP_FOLDER SESSION_NAME
+./mapmind/docker_run_drone.sh MAP_FOLDER SESSION_NAME
 ```
 
 4. The script will automatically:
