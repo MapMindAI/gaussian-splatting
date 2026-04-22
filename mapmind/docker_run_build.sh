@@ -4,16 +4,15 @@ set -e
 
 MODEL_DIR=$(pwd)
 
-docker run -d --gpus all --rm --name 'EasyGaussianSplatting' \
+docker run -d --rm --name 'EasyGaussianSplatting' \
+--gpus 'all,"capabilities=compute,utility,graphics,video"' \
+-e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video \
+-e NVIDIA_VISIBLE_DEVICES=all \
 -p 8001:8001 \
 -v ${MODEL_DIR}:/EasyGaussianSplatting \
-ghcr.io/mapmindai/gaussiansplatting:latest \
+colmap_gaussian_splatting \
 bash -c "
-conda activate gaussian_splatting
-./mapmind/run_360.sh /EasyGaussianSplatting/data insta360_test
-
+cd /EasyGaussianSplatting
+conda run -n gaussian_splatting ./mapmind/run_360.sh /EasyGaussianSplatting/data insta360_test
 chmod -R 777 /EasyGaussianSplatting/data/insta360_test
 "
-
-
-# docker exec -it tritonserver bash

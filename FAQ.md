@@ -28,12 +28,7 @@ sudo do-release-upgrade
 
 You need to install cudnn following [NVIDIA official doc](https://developer.nvidia.com/cudnn-downloads).
 
-### 3. Insta360 might have low quality result
-
-Yes. **The insta360 panorama has some stitching artifacts, we strongly recommend you to use GoPro if possible.** GoPro Max did this job much better.
-
-
-### 4. Memory not enough
+### 3. Memory not enough
 
 
 1. You could reduce the size of image by changing **--resize_factor 0.5** in "mapmind/run_360.sh".
