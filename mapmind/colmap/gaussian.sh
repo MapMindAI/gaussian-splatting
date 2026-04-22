@@ -105,7 +105,7 @@ cd /EasyGaussianSplatting
 python train.py ${DAY_NIGHT_SCENE_LINE} ${EXPOSURE_GS_ARG} ${DEPTH_GS_ARG} \
 --source_path ${MAP_FOLDER}/${SESSION}${IF_USE_DENSE} \
 --model_path  ${MAP_FOLDER}/${SESSION}/${OUTPUT_FOLDER} \
-${LR_GS_ARG} \
+${LR_GS_ARG} --dynamic_memory \
 --iterations ${ITERATIONS} \
 --resolution -1 \
 --save_iterations 10000 40000 80000 \

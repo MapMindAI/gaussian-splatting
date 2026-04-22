@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+if [ $# -lt 2 ]; then
+    echo "PLEASE SET <MAP_FOLDER> <SESSION NAME>"
+    exit 1
+fi
 
 MODEL_DIR=$(pwd)
 SESSION=$2
