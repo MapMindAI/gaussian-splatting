@@ -33,11 +33,13 @@ except ImportError:
 # disable tensorboard
 TENSORBOARD_FOUND = False
 
-try:
-    from fused_ssim import fused_ssim
-    FUSED_SSIM_AVAILABLE = True
-except:
-    FUSED_SSIM_AVAILABLE = False
+# try:
+#     from fused_ssim import fused_ssim
+#     FUSED_SSIM_AVAILABLE = True
+# except:
+#     FUSED_SSIM_AVAILABLE = False
+# TODO: fix sparse ssim library
+FUSED_SSIM_AVAILABLE = False
 
 try:
     from diff_gaussian_rasterization import SparseGaussianAdam
@@ -85,7 +87,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
     # maximum size of pcl is 2G for unity gs plugin
     max_number_of_pts = 2 * 1024 * 1024 * 1024 / 248
-    
+
     # depth weight should also be affected by image scale (scene.cameras_extent)
     cameras_extent_scale = scene.cameras_extent / 10.0
     print(f" - cameras_extent_scale {cameras_extent_scale}")
@@ -192,7 +194,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             ema_loss_for_log = 0.4 * loss.item() + 0.6 * ema_loss_for_log
             ema_Ll1depth_for_log = 0.4 * Ll1depth + 0.6 * ema_Ll1depth_for_log
             pcl_shape = scene.gaussians._xyz.shape[0]
-            
+
             if iteration % 10 == 0:
                 progress_bar.set_postfix({"Loss": f"{ema_loss_for_log:.{5}f}", "DepLoss": f"{ema_Ll1depth_for_log:.{5}f}", "PCL": f"{pcl_shape}"})
                 progress_bar.update(10)

@@ -18,12 +18,13 @@ def parse_args():
     parser.add_argument("--process_interval", help="frame process interval", default=60, type=int)
     parser.add_argument("--jump_jump", help="jump some of the frames", default=0, type=int)
     parser.add_argument("--input_video", help="input 360 video path", type=str)
+    parser.add_argument("--resize_factor", help="resize factor of the output images", default=1.0, type=float)
     args = parser.parse_args()
 
     return args
 
 
-def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_folder):
+def read_video_frames(num_divide, process_interval, jump_jump, resize_factor, video_path, save_folder):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -40,7 +41,7 @@ def read_video_frames(num_divide, process_interval, jump_jump, video_path, save_
         return -1
 
     # compute a proper resolution for the output image
-    image_width = int(video_width / num_divide)
+    image_width = int(video_width * resize_factor/ num_divide)
     image_height = int(image_width * 0.8)
     output_resolu = (image_width, image_height)
     output_focal = (50 * num_divide) * image_width / 640
@@ -122,7 +123,7 @@ def process_insta360_videos(input_video_path):
                 -inputs {pano_raw_video} -output {output_mp4_path} \
                 -stitch_type optflow -enable_stitchfusion \
                 -output_size 8000x4000 -bitrate 150000000 \
-                -enable_h265_encoder -enable_flowstate
+                -enable_h265_encoder -enable_flowstate -enable_directionlock
                 """
                 print("  - run command line : " + command_line)
                 os.system(command_line)
@@ -164,6 +165,7 @@ if __name__ == "__main__":
             args.num_divide,
             args.process_interval,
             args.jump_jump,
+            args.resize_factor,
             video_path,
             save_folder,
         )
@@ -182,8 +184,9 @@ if __name__ == "__main__":
         elif os.path.isfile(output_meta_file):
             # this is insta360 file
             gps_list = insta360_meta_extractor.read_gps_from_meta(output_meta_file)
-            insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
             has_gps = len(gps_list) > 0
+            if has_gps:
+                insta360_meta_extractor.add_exif_to_image(gps_list, video_path, focus_length)
 
     # create a file to tell that image gps exist
     if has_gps:

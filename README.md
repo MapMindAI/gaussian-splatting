@@ -9,18 +9,17 @@ EasyGaussianSplatting provides an end-to-end, production-oriented pipeline for G
 
 The repository is designed to bridge the gap between research prototypes and real-world applications by integrating:
 
-- Docker-based environment for reproducibility
-- Automated scripts for the full reconstruction workflow
-- One-command execution from input data to final rendering
+- 🎉 **One-command execution from input data to final rendering**
+  * Docker-based environment for reproducibility
+  * Automated scripts for the full reconstruction workflow
+- 🎉 **Optimized GPU memory usage, could train large model on consumer-grade GPUs**
+  * I have done my tests with GTX 1650 Ti 4G.
 
 In addition to the standard pipeline, this project includes **geo-referencing capabilities**:
 - Native support for DJI and GoPro datasets with GPS metadata
 - Transformation from geographic coordinates to UTM space
 - Recovery of metric scale using GPS information
 - Integration of geo-aligned reconstruction into the pipeline
-
-We further **optimize the memory footprint** of Gaussian Splatting,
-**significantly reducing GPU usage** and enabling large-scale scene training on consumer-grade GPUs.
 
 These features enable users to obtain not only visually accurate reconstructions, but also **spatially consistent, scale-aware, and scalable 3D scenes**.
 
@@ -46,7 +45,7 @@ docker run -it --rm -v $(pwd):/workspace ghcr.io/mapmindai/gaussiansplatting:lat
 Please refer to the docker file "artifacts/docker/dev.dockerfile" to build the environment.
 
 ```
-docker build -f artifacts/docker/dev.dockerfile -t colmap_gaussian_splatting artifacts/docker/
+docker build -f artifacts/docker/dev.dockerfile -t cuda_dev artifacts/docker/
 ```
 
 In the repo we have rebuilt libs for docker env, if you don't use docker, you might need to build these libs:
@@ -72,12 +71,10 @@ pip install submodules/fused-ssim
   * Put the drone video to the session_folder, along with the RST file (used to extract GPS message).
   * If you want to build with images, create a folder called "images", and put you photos there.
 
-![example folder structure](assets/mapmind/example_drone_data.png)
-
 3. **Run the reconstruction pipeline**:
 
 ```
-./mapmind/run_drone.sh MAP_FOLDER SESSION_NAME
+./mapmind/docker_run_drone.sh MAP_FOLDER SESSION_NAME
 ```
 
 4. The script will automatically:
@@ -91,7 +88,10 @@ Example usage : `./mapmind/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_t
 About 1 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1K8n5lYDqT42_YaPtC5t4T2Nx0TkEyDko/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
-![example folder result](assets/mapmind/example_drone_data_result.png)
+|  prepare stage | mapping result |
+|-------|--------|
+|  ![before](assets/mapmind/example_drone_data.png) | ![after](assets/mapmind/example_drone_data_result.png) |
+
 
 ![gs example viz](assets/mapmind/ezgif-339be5ecd00a3b61.gif)
 
@@ -105,7 +105,7 @@ After the building step finished, we will have the following results in the fold
 | GoPro Max|  Insta360 |
 |------------|--------|
 | Use the official GoPro application to stitch the raw video into a standard panorama video. <br>For each capture, keep both: <br>* the raw .360 file; <br>* the stitched .mp4 panorama video; <br>Both files should be uploaded into the dataset folder. | Copy the raw .insv file directly from the SD card. <br>No manual stitching is required. <u>High-quality stitching is included in our Docker pipeline.</u> |
-| ([example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176)) |  |
+| [example google drive panorama videos](https://drive.google.com/drive/folders/1goRPlZ7ikPTf-TNwHq7rNClTvoauZEzw?usp=drive_link)<br> [example 百度云 drone videos](https://pan.baidu.com/s/13rb8IkgxRQ2M-nywWnyKfw?pwd=n176) | [example google drive panorama videos](https://drive.google.com/drive/folders/19YyxPJoesmAcTHi2PRiAtMKyvESlz0pb?usp=sharing)<br> [example 百度云 drone videos](https://pan.baidu.com/s/1mpsLdNN1H-hHEFfSv1gTeQ?pwd=8qdg) |
 
 <details>
 <summary>Insta360 stitch with Linux SDK</summary>
@@ -116,8 +116,8 @@ Raw Insta360 videos need to be processed with phone, and lack of parameters. Her
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-INPUT_INSV=data/insta360_test/VID_20260417_141937_00_001.insv
-OUPUT_VIDEO=data/insta360_test/VID_20260417_141937_00_001_test.mp4
+INPUT_INSV=data/insta360_test/VID_20260422_153814_00_004.insv
+OUPUT_VIDEO=data/insta360_test/VID_20260422_153814_00_004_test.mp4
 
 insta360_media_stitcher \
 -inputs ${INPUT_INSV} \
@@ -125,7 +125,7 @@ insta360_media_stitcher \
 -model_root_dir /EasyGaussianSplatting/data/sdk_dir \
 -stitch_type aistitch -enable_stitchfusion \
 -output_size 8000x4000 -bitrate 150000000 \
--enable_h265_encoder -enable_flowstate -enable_colorplus
+-enable_h265_encoder -enable_flowstate -enable_directionlock
 ```
 
 Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/panorama/insta360_meta_extractor.py" to see more details, about how we extract these data.
@@ -136,7 +136,7 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 3. **Run the reconstruction pipeline**:
 
 ```
-./mapmind/run_360.sh MAP_FOLDER SESSION_NAME
+./mapmind/docker_run_360.sh MAP_FOLDER SESSION_NAME
 ```
 
 4. The script will automatically:
@@ -147,9 +147,15 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
   * process the scene for Gaussian Splatting
   * localization asset generation, including depth, TSDF mesh, and localization database, for [localization service](https://github.com/MapMindAI/VisualLocalizationService)
 
+|  prepare stage | mapping result |
+|-------|--------|
+|  ![before](assets/mapmind/insta360_before.png) | ![after](assets/mapmind/insta360_after.png) |
+
 Example usage : `./mapmind/run_360.sh /mnt/data/yeliu/gaussian_splatting insta360_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder.
+
+![gs example viz](assets/mapmind/ezgif-3579472270c1cbb1.gif)
 
 # Adjust Gaussian Parameters
 

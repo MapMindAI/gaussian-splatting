@@ -105,18 +105,19 @@ colmap view_graph_calibrator \
   --database_path ${MAP_FOLDER}/${SESSION}/database_global.db
 
 mkdir -p ${MAP_FOLDER}/${SESSION}/sparse_raw
+mkdir -p ${MAP_FOLDER}/${SESSION}/sparse/0
 
 colmap global_mapper \
   --database_path ${MAP_FOLDER}/${SESSION}/database_global.db \
   --image_path ${MAP_FOLDER}/${SESSION}/images \
   --output_path ${MAP_FOLDER}/${SESSION}/sparse_raw \
 
-# rotate the model to fit UE axis
-echo "====================== ROTATE COLMAP TO UE ======================"
-python mapmind/colmap/rotate_colmap_to_UE.py \
---colmap_model_path ${MAP_FOLDER}/${SESSION} \
---input_sparse_path sparse_raw/0/ \
---output_sparse_path sparse_raw/0/
+# TODO: fix its problem - rotate the model to fit UE axis
+# echo "====================== ROTATE COLMAP TO UE ======================"
+# python mapmind/colmap/rotate_colmap_to_UE.py \
+# --colmap_model_path ${MAP_FOLDER}/${SESSION} \
+# --input_sparse_path sparse_raw/0/ \
+# --output_sparse_path sparse_raw/0/
 
 if [ -d "$TEST_PATH_GPS" ]; then
   echo "====================== USE GPS TRANSFORM ======================"

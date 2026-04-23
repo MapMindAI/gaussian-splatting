@@ -1,7 +1,5 @@
 ## FAQ:
 
-
-
 ### 1. Cannot run the docker image in Ubuntu 20.04.
 
 You need to update to Ubuntu 22.04 (at least), following:
@@ -26,6 +24,12 @@ sudo do-release-upgrade
   * Install nvidia drivers : `sudo ubuntu-drivers autoinstall`
   * Fix desktop env : `sudo apt install --reinstall ubuntu-desktop`
 
-### 2. Insta360 Stitch not working
+### 2. Insta360 stitch not working
 
 You need to install cudnn following [NVIDIA official doc](https://developer.nvidia.com/cudnn-downloads).
+
+### 3. Memory not enough
+
+
+1. You could reduce the size of image by changing **--resize_factor 0.5** in "mapmind/run_360.sh".
+2. To do the full training routine and avoid running out of memory, you can increase the --densify_grad_threshold (0.0002), --densification_interval (100) or reduce the value of --densify_until_iter (15_000).
