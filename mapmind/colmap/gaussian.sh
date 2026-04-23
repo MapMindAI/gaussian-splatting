@@ -28,28 +28,31 @@ fi
 
 # enable Exposure compensation
 EXPOSURE_GS_ARG="--exposure_lr_init 0.001 --exposure_lr_final 0.0001 --exposure_lr_delay_steps 5000 --exposure_lr_delay_mult 0.001 --train_test_exp "
-DENSIFY_GS_ARG="--densify_grad_threshold 0.0002 --percent_dense 0.01"
-LR_GS_ARG="--position_lr_init 0.00016 --scaling_lr 0.005"
 DAY_NIGHT_SCENE_LINE="--white_background"
+DENSIFY_GS_ARG="--densify_grad_threshold 0.00008 --percent_dense 0.015"
+LR_GS_ARG="--position_lr_init 0.000016 --scaling_lr 0.001"
 
-if [ -d "$TEST_PATH_GPS" ]; then
-    echo "GPS data is available, in the outdoor scene, adjust the parameters"
-
-    DENSIFY_GS_ARG="--densify_grad_threshold 0.00008 --percent_dense 0.015"
-    LR_GS_ARG="--position_lr_init 0.000016 --scaling_lr 0.001"
-
-    # add night to name if collect in night
-    variable="night"
-    if echo "$SESSION" | grep -q "$variable"; then
-        echo "====================== PROCESS NIGHT ======================"
-        echo "The session is in night, where the L1 loss will be small, since the scene is dark. so we increase lambda_dssim."
-        DAY_NIGHT_SCENE_LINE="--lambda_dssim 0.5"
-        # decrease the threshold, since night scene has less texture
-        DENSIFY_GS_ARG="--densify_grad_threshold 0.00005 --percent_dense 0.015"
-    fi
+# add night to name if collect in night
+variable="night"
+if echo "$SESSION" | grep -q "$variable"; then
+    echo "====================== PROCESS NIGHT ======================"
+    echo "The session is in night, where the L1 loss will be small, since the scene is dark. so we increase lambda_dssim."
+    DAY_NIGHT_SCENE_LINE="--lambda_dssim 0.5"
+    # decrease the threshold, since night scene has less texture
+    DENSIFY_GS_ARG="--densify_grad_threshold 0.00005 --percent_dense 0.015"
 fi
 
-echo "======== Process session : " ${SESSION} ${IF_USE_DENSE} "========"
+mem=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1)
+if [ "$mem" -gt 4096 ]; then
+  echo "GPU memory (${mem}) is larger than 4GB"
+else
+  echo "GPU memory (${mem}) is 4GB or less, adjust parameter to fit low memory condition"
+  DENSIFY_GS_ARG="--densify_grad_threshold 0.001 --percent_dense 0.01 --densification_interval 500"
+  LR_GS_ARG="--position_lr_init 0.00016 --scaling_lr 0.005"
+fi
+
+
+echo "====================== Process session : " ${SESSION} ${IF_USE_DENSE} "======================"
 
 export PYTHONPATH="$PYTHONPATH:submodules/libs"
 OUTPUT_FOLDER=output
@@ -95,7 +98,7 @@ if [ "$USE_DEPTH" = true ] ; then
 fi
 
 NUM_IMAGES=$(find ${MAP_FOLDER}/${SESSION}/images -type f | wc -l)
-ITERATIONS=$((NUM_IMAGES * 50 / 1000 * 1000))
+ITERATIONS=$((NUM_IMAGES * 50))
 
 echo "====================== PROCESS GAUSSSIAN SPLATTING ======================"
 echo "====================== ${IF_USE_DENSE} ${OUTPUT_FOLDER} ${ITERATIONS} ======================"
