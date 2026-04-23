@@ -70,6 +70,7 @@ pip install submodules/fused-ssim
 2. **Collect the captured data.** After the flight, copy all DJI videos and images into a single dataset folder. ([example google drive drone videos](https://drive.google.com/drive/folders/1TIcNHhN6kdgpAfCDT56L06swd2MmmnuI?usp=drive_link), [example 百度云 drone videos](https://pan.baidu.com/s/1cGXAVGgjjHT833OYTxyXMw?pwd=pnmh)):
   * Put the drone video to the session_folder, along with the RST file (used to extract GPS message).
   * If you want to build with images, create a folder called "images", and put you photos there.
+  * **We recommend you put the files to "EasyGaussianSplatting/data/session_name"**
 
 3. **Run the reconstruction pipeline**:
 
@@ -84,7 +85,7 @@ pip install submodules/fused-ssim
   * align the reconstruction with GPS to recover real-world scale
   * process the scene for Gaussian Splatting
 
-Example usage : `./mapmind/run_drone.sh /mnt/data/yeliu/gaussian_splatting DJI_test`.
+Example usage : `./mapmind/docker_run_drone.sh /EasyGaussianSplatting/data DJI_test`.
 About 1 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1K8n5lYDqT42_YaPtC5t4T2Nx0TkEyDko/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder:
 
@@ -100,7 +101,7 @@ After the building step finished, we will have the following results in the fold
 1. **Capture the videos**. Record 360 videos using either GoPro Max or Insta360.
   * GoPro Max has built-in GPS.
   * Insta360 requires **connection to a phone** to include GPS, since GPS is obtained from the phone.
-2. **Prepare the panorama files**
+2. **Prepare the panorama files** (**We recommend you put the files to "EasyGaussianSplatting/data/session_name"**)
 
 | GoPro Max|  Insta360 |
 |------------|--------|
@@ -151,7 +152,7 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 |-------|--------|
 |  ![before](assets/mapmind/insta360_before.png) | ![after](assets/mapmind/insta360_after.png) |
 
-Example usage : `./mapmind/run_360.sh /mnt/data/yeliu/gaussian_splatting insta360_test`.
+Example usage : `./mapmind/docker_run_360.sh /EasyGaussianSplatting/data insta360_test`.
 About 4 hour is needed for the full pipeline. ([example gs output](https://drive.google.com/file/d/1OjUJQPisnMGFPAohGS6qwURQP-gvanrW/view?usp=drive_link))
 After the building step finished, we will have the following results in the folder, and gaussian splatting point cloud could be found in 'output' folder.
 
