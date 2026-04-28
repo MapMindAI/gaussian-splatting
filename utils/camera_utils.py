@@ -36,7 +36,7 @@ def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dat
         else:
             print("[ WARN ]", image_path, "not found")
             return False, None
-            
+
 
     if cam_info.depth_path != "":
         try:
@@ -106,7 +106,7 @@ def cameraList_from_camInfos(cam_infos, resolution_scale, args, is_nerf_syntheti
             camera_list.append(camera)
         progress_bar.update(1)
     progress_bar.close()
-    
+
     return camera_list
 
 def camera_to_JSON(id, camera : Camera):

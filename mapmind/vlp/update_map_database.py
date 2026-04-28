@@ -19,6 +19,7 @@ from scipy.spatial.transform import Rotation as R
 from typing import Dict, List, Tuple, Optional
 from LightGlue.lightglue import SuperPoint
 
+FEATURE_TYPE=4
 
 class COLMAPDatabase:
     def __init__(self, original_db_path: str, new_db_path: str = None):
@@ -162,8 +163,8 @@ class COLMAPDatabase:
 
             desc_blob = descps.astype(np.uint8).tobytes()
             self.cursor.execute(
-                "INSERT INTO descriptors (image_id, rows, cols, data) VALUES (?, ?, ?, ?)",
-                (image_id, num_kpts, desc_dim, desc_blob),
+                "INSERT INTO descriptors (image_id, rows, cols, data, type) VALUES (?, ?, ?, ?, ?)",
+                (image_id, num_kpts, desc_dim, desc_blob, FEATURE_TYPE),
             )
 
             success_count += 1

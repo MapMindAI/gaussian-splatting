@@ -69,6 +69,7 @@ def render_set(model_path, iteration, views, gaussians, pipeline, background, tr
     makedirs(render_path, exist_ok=True)
 
     for idx, view in enumerate(tqdm(views, desc="Rendering progress")):
+        view.load_image_size()
         render_pkg = render(view, gaussians, pipeline, background, use_trained_exp=train_test_exp, separate_sh=separate_sh)
         rendering = render_pkg["render"]
         depth = render_pkg["depth"]
@@ -92,7 +93,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
 
         render_set(dataset.model_path, scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background, dataset.train_test_exp, separate_sh)
 
-        
+
 
 if __name__ == "__main__":
     # Set up command line argument parser
@@ -111,7 +112,7 @@ if __name__ == "__main__":
         if iteration > max_iteration:
             max_iteration = iteration
     print("Load pcl iteration ", max_iteration)
-    
+
     # Initialize system state (RNG)
     safe_state(args.quiet)
 

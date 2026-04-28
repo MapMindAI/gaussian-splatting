@@ -27,13 +27,13 @@ class Camera(nn.Module):
             alpha_mask = resized_image_rgb[3:4, ...].to(self.data_device)
         else:
             alpha_mask = torch.ones_like(resized_image_rgb[0:1, ...].to(self.data_device))
-        
+
         if self.train_test_exp and self.is_test_view:
             if self.is_test_dataset:
                 alpha_mask[..., :alpha_mask.shape[-1] // 2] = 0
             else:
                 alpha_mask[..., alpha_mask.shape[-1] // 2:] = 0
-        
+
         original_image = gt_image.clamp(0.0, 1.0).to(self.data_device)
 
         return alpha_mask, original_image
@@ -59,13 +59,23 @@ class Camera(nn.Module):
         invdepthmap_full = torch.from_numpy(invdepthmap_full[None]).to(self.data_device)
         return invdepthmap_full
 
-    
+
     def get_depth_mask(self):
         depth_mask_full = cv2.resize(self.depth_mask, self.resolution)
         depth_mask_full = torch.from_numpy(depth_mask_full[None]).to(self.data_device)
         return depth_mask_full
-    
-            
+
+
+    def load_image_size(self):
+        if hasattr(self, "image_width"):
+            return
+        ## load the image size
+        self.alpha_mask, self.original_image = self.read_image(self.image_path, self.resolution)
+        self.image_width = self.original_image.shape[2]
+        self.image_height = self.original_image.shape[1]
+        self.unload_image()
+
+
     def __init__(self, resolution, colmap_id, R, T, FoVx, FoVy, depth_params, image_path, invdepthmap,
                  image_name, uid,
                  trans=np.array([0.0, 0.0, 0.0]), scale=1.0, data_device = "cuda",
@@ -101,8 +111,8 @@ class Camera(nn.Module):
         else:
             self.alpha_mask, self.original_image = self.read_image(self.image_path, self.resolution)
             self.image_width = self.original_image.shape[2]
-            self.image_height = self.original_image.shape[1]      
-        
+            self.image_height = self.original_image.shape[1]
+
         depth_buffer_resolution = 518  # process size for depth anything
         self.invdepthmap = None
         self.depth_reliable = False
@@ -114,10 +124,10 @@ class Camera(nn.Module):
             self.depth_reliable = True
             if self.invdepthmap.ndim != 2:
                 self.invdepthmap = self.invdepthmap[..., 0]
-            
+
             self.invdepthmap = cv2.resize(self.invdepthmap, (depth_buffer_resolution, depth_buffer_resolution))
             self.depth_mask = cv2.resize(self.depth_mask, (depth_buffer_resolution, depth_buffer_resolution))
-            
+
             if depth_params is not None:
                 if depth_params["scale"] < 0.2 * depth_params["med_scale"] or depth_params["scale"] > 5 * depth_params["med_scale"]:
                     self.depth_reliable = False
@@ -126,7 +136,7 @@ class Camera(nn.Module):
                     self.invdepthmap = self.invdepthmap * depth_params["scale"] + depth_params["offset"]
                     # mask for far depth
                     self.depth_mask[self.invdepthmap > 15.0] = 0
-                    
+
             # self.invdepthmap = torch.from_numpy(self.invdepthmap[None]).to(self.data_device)
 
         self.zfar = 100.0
