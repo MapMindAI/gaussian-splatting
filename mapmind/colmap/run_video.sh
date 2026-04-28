@@ -82,7 +82,7 @@ else
     else
         echo "voc not exists, process download"
         curl -L -o ${MODELS_FOLDER}/${VOC_NAME} \
-          https://github.com/MapMindAI/EasyGaussianSplatting/releases/download/v0/${VOC_NAME}
+          https://github.com/MapMindAI/EasyGaussianSplatting/releases/download/v1/${VOC_NAME}
     fi
 
     echo "====================== sequential_matcher ======================"

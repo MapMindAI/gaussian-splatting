@@ -8,3 +8,6 @@
 [submodule "submodules/fused-ssim"]
 	path = submodules/fused-ssim
 	url = https://github.com/rahul-goel/fused-ssim.git
+[submodule "submodules/LightGlue"]
+	path = submodules/LightGlue
+	url = https://github.com/cvg/LightGlue.git

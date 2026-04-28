@@ -97,7 +97,7 @@ def integrate_tsdf(colmap_dir, rgb_dir, depth_dir, voxel_length=0.2, sdf_trunc=0
         depth_o3d = o3d.geometry.Image(depth_np)
 
         cam = cameras[image.camera_id]
-        assert cam.model is "PINHOLE"
+        assert cam.model == "PINHOLE", print("we need PINHOLE, while get", cam.model)
 
         intrinsic = o3d.camera.PinholeCameraIntrinsic()
         intrinsic.set_intrinsics(
