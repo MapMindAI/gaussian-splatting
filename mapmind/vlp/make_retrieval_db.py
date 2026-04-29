@@ -58,8 +58,7 @@ if __name__ == "__main__":
     sqlite_cursor = sqlite_conn.cursor()
 
     def get_descroptors(image_id):
-        #  (image_id, rows, cols, data)
-        sqlite_cursor.execute("SELECT * FROM descriptors WHERE image_id = ?", (str(image_id),))
+        sqlite_cursor.execute("SELECT image_id, rows, cols, data FROM descriptors WHERE image_id = ?", (str(image_id),))
         result = sqlite_cursor.fetchone()
         assert result is not None
         desc = np.frombuffer(result[3], dtype=np.uint8).reshape((result[1], result[2]))
