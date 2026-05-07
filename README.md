@@ -39,6 +39,8 @@ Run the container with:
 docker run -it --rm -v $(pwd):/workspace ghcr.io/mapmindai/gaussiansplatting:latest
 ```
 
+> **Windows users:** All `.sh` scripts must be executed in **Git Bash** (not PowerShell or CMD). Make sure [Git for Windows](https://git-scm.com/download/win) is installed and Docker Desktop is running.
+
 <details>
 <summary>Or build the environment if not using docker image</summary>
 
@@ -74,9 +76,11 @@ pip install submodules/fused-ssim
 
 3. **Run the reconstruction pipeline**:
 
-```
+```bash
 ./mapmind/docker_run_drone.sh MAP_FOLDER SESSION_NAME
 ```
+
+> **Windows:** Run the above command in **Git Bash**.
 
 4. The script will automatically:
   * preprocess videos and subsample frames
@@ -136,9 +140,11 @@ Insta360 IMU and GPS are all available from its exif file, refer to "mapmind/pan
 
 3. **Run the reconstruction pipeline**:
 
-```
+```bash
 ./mapmind/docker_run_360.sh MAP_FOLDER SESSION_NAME
 ```
+
+> **Windows:** Run the above command in **Git Bash**.
 
 4. The script will automatically:
   * video preprocessing & panorama-to-pinhole extraction (high-quality stitching for Insta360 when needed)

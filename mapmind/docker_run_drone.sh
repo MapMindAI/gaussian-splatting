@@ -6,7 +6,11 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-MODEL_DIR=$(pwd)
+if [[ "$(uname -s)" == MINGW* ]] || [[ "$(uname -s)" == CYGWIN* ]] || [[ "$(uname -s)" == MSYS* ]]; then
+    MODEL_DIR=$(pwd -W)
+else
+    MODEL_DIR=$(pwd)
+fi
 SESSION=$2
 MAP_FOLDER=$1
 
@@ -17,7 +21,7 @@ docker run --rm --name 'EasyGaussianSplatting' \
 -e NVIDIA_VISIBLE_DEVICES=all \
 -p 8001:8001 \
 -v ${MODEL_DIR}:/EasyGaussianSplatting \
-ghcr.io/mapmindai/gaussiansplatting:sha-12e9065 \
+ghcr.io/mapmindai/gaussiansplatting:latest \
 bash -c "
 cd /EasyGaussianSplatting
 conda run --no-capture-output -n gaussian_splatting ./mapmind/run_drone.sh ${MAP_FOLDER} ${SESSION}

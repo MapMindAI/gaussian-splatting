@@ -6,18 +6,20 @@ import argparse
 import os
 import cv2
 import open3d
-import torch
 from tqdm import tqdm
 
 import sys
+from pathlib import Path
 
-sys.path.append("scene")
-sys.path.append("submodules")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.append(str(PROJECT_ROOT / "scene"))
+sys.path.append(str(PROJECT_ROOT / "submodules"))
 from colmap_loader import *
 
 from scipy.spatial.transform import Rotation as R
 from typing import Dict, List, Tuple, Optional
-from LightGlue.lightglue import SuperPoint
+from mapmind.feature import SuperPointONNX
 
 FEATURE_TYPE=4
 
@@ -34,6 +36,7 @@ class COLMAPDatabase:
         self.new_db_path = new_db_path
         self.reconstruction_path = original_db_path.replace("database.db", "sparse/0/")
         self.max_image_width = 1080
+        self.feature_keypoint_thresh = 0.015
 
         # Copy original database to new path
         shutil.copy2(original_db_path, self.new_db_path)
@@ -55,7 +58,7 @@ class COLMAPDatabase:
         # add 3d_coords and colors column
         self.add_3d_coords_column()
 
-        # If use_superpoint, replace original features
+        # Replace original features with local SuperPoint ONNX features.
         self.replace_with_superpoint()
 
         self.print_database_info()
@@ -67,10 +70,13 @@ class COLMAPDatabase:
 
         print(f"-----------Replacing original features with superpoint features-----------")
         # 1. Get superpoint and load all image_id
-        superpoint = SuperPoint(max_num_keypoints=4096).eval().to("cuda")
+        superpoint = SuperPointONNX(
+            max_image_shape=self.max_image_width,
+            keypoint_thresh=self.feature_keypoint_thresh,
+        )
         image_ids = self.get_all_image_ids()
         success_count = 0
-        print(f"Get superpoint and load all image_id!")
+        print(f"Get local ONNX superpoint and load all image_id!")
 
         # 2. Clear existing keypoints and descriptors
         self.cursor.execute("DELETE FROM keypoints")
@@ -103,30 +109,11 @@ class COLMAPDatabase:
 
             # 3.2 Run superpoint
             try:
-                # ktps, descps = superpoint.run(image)
-                image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image.copy()
-                if image_gray.shape[1] > self.max_image_width:
-                    # resize the image, if image size too large
-                    new_height = int(self.max_image_width * image_gray.shape[0] / image_gray.shape[1])
-                    image_size = (self.max_image_width, new_height)
-                    image_gray = cv2.resize(image_gray, image_size).astype(np.uint8)
-                image_tensor = torch.from_numpy(image_gray / 255.0).float()[None, None].to("cuda")
-                image_size = (image_gray.shape[1], image_gray.shape[0])
+                ktps, descps, _ = superpoint.run(image)
 
-                pred0 = superpoint({"image": image_tensor})
-                old_ktps = pred0["keypoints"][0].detach().cpu().numpy()
-                descps = pred0["descriptors"][0].detach().cpu().numpy()
-
-                ktps = []
-                factor_x = image.shape[1] / image_size[0]
-                factor_y = image.shape[0] / image_size[1]
-                for i in range(old_ktps.shape[0]):
-                    ktps.append([factor_x * old_ktps[i][0], factor_y * old_ktps[i][1]])
-                ktps = np.array([ktps], dtype=np.float32)
-
-                # normalize descriptions
+                # Keep the descriptor storage format consistent with the previous database.
                 descps = 255.0 * (descps + 0.5)
-                descps = np.array([descps], dtype=np.uint8)
+                descps = np.clip(descps, 0, 255).astype(np.uint8)
 
                 # ktps, descps = ktps[0], descps[0]
             except Exception as e:
@@ -643,7 +630,7 @@ class DepthTo3DConverter:
         coords_3d = []
 
         # Extract intrinsic parameters (assuming PINHOLE model)
-        assert camera_model is 1  # PINHOLE
+        assert camera_model == 1  # PINHOLE
         fx, fy, cx, cy = camera_params[:4]
 
         max_inv_depth = 1.0 / self.max_depth
@@ -829,13 +816,6 @@ def main():
         default=95,
         help="maximum visualization depth percentile",
     )
-    parser.add_argument(
-        "--whether_use_superpoint",
-        type=int,
-        default=1,
-        help="whether use sp to replace keypoints table",
-    )
-
     args = parser.parse_args()
 
     # Construct paths
@@ -844,7 +824,6 @@ def main():
     depth_path = os.path.join(args.map_dir, args.depth_path)
     min_depth_percentile = args.min_depth_percentile
     max_depth_percentile = args.max_depth_percentile
-    use_superpoint = args.whether_use_superpoint
 
     # Check if original database exists
     if not os.path.exists(original_db_path):
@@ -861,10 +840,7 @@ def main():
     print(f"Depth maps directory: {depth_path}")
 
     # Initialize tools
-    if use_superpoint:
-        db_tool = COLMAPDatabase(original_db_path, new_db_path)
-    else:
-        db_tool = COLMAPDatabase(original_db_path, new_db_path)
+    db_tool = COLMAPDatabase(original_db_path, new_db_path)
 
     depth_converter = DepthTo3DConverter(depth_path, min_depth_percentile, max_depth_percentile)
 
